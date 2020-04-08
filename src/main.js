@@ -8,8 +8,9 @@ const config = {
   pixelArt: true,
   roundPixels: true,
   parent: 'content',
-  width: 1000,
-  height: 1000,
+  scale: {
+    mode: Phaser.Scale.RESIZE
+  },
   physics: {
     default: 'arcade',
     arcade: {
@@ -22,4 +23,5 @@ const config = {
   ],
 };
 
+console.log('MAIN');
 const game = new Phaser.Game(config); // eslint-disable-line no-unused-vars

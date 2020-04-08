@@ -33,11 +33,13 @@ class InGameMenuScene extends Phaser.Scene {
   };
 
   resumeGame = () => {
+    console.log('game unpaused')
     this.scene.resume('GameScene');
     this.scene.stop();
   };
 
   restartGame = () => {
+    console.log('game restarted')
     this.scene.stop('GameScene');
     this.scene.launch('GameScene');
     this.scene.stop();
