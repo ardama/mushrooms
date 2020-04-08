@@ -23,6 +23,7 @@ export default class Map {
       { index: 3, weight: 2 },
       { index: 4, weight: 2 },
     ]);
+    map.convertLayerToStatic(this.groundLayer);
   }
   
   update(time, delta) {

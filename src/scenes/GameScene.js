@@ -48,6 +48,8 @@ export default class GameScene extends Phaser.Scene {
 
     this.initializeInputs();
     
+    this.physics.world.setBounds(0, 0, 200 * 32, 200 * 32);
+    this.cameras.main.setBounds(0, 0, 200 * 32, 200 * 32);
     this.cameras.main.startFollow(this.character);
   }
 

@@ -10,7 +10,7 @@ const typeData = {
 
 export default class Champion extends Unit {
   constructor(scene, x, y) {
-    const unitData = { appearance: { key: 'tiles' } };
+    const unitData = { appearance: { key: 'tiles', hitbox: { width: 30 } } };
     super(scene, x, y, unitData, typeData);
   }
   
@@ -37,15 +37,15 @@ export default class Champion extends Unit {
     let directionX = (this.state.moving.left ? -1 : 0) + (this.state.moving.right ? 1 : 0);
     let directionY = (this.state.moving.up ? -1 : 0) + (this.state.moving.down ? 1 : 0);
     
-    let velocityX = directionX * 175;
-    let velocityY = directionY * 175;
+    let velocityX = directionX * 200;
+    let velocityY = directionY * 200;
     if (directionX !== 0 && directionY !== 0) {
       velocityX /= C.Misc.Root2;
       velocityY /= C.Misc.Root2;
     }
     
-    this.x += velocityX * delta/1000;
-    this.y += velocityY * delta/1000;
+    this.body.x += velocityX * (delta / 1000);
+    this.body.y += velocityY * (delta / 1000);
 
     // // Update attack timer
     // this.state.cooldowns.attack -= delta;

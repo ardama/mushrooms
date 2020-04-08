@@ -123,9 +123,10 @@ export default class Unit extends Phaser.GameObjects.Sprite {
   };
   
   getHealthbarCoordinates() {
+    
     return {
-      x: this.x,
-      y: this.y - 15,
+      x: this.body ? this.body.x : this.x,
+      y: (this.body ? this.body.y : this.y) - 25,
     };
   };
   
