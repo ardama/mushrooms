@@ -40,14 +40,14 @@ export default class GameScene extends Phaser.Scene {
     });
 
     this.createGroups();
-  
+
     this.createCharacter();
     this.createMap();
     this.createStructures();
     this.createEnemies();
 
     this.initializeInputs();
-    
+
     this.physics.world.setBounds(0, 0, 200 * 32, 200 * 32);
     this.cameras.main.setBounds(0, 0, 200 * 32, 200 * 32);
     this.cameras.main.startFollow(this.character);
@@ -74,11 +74,11 @@ export default class GameScene extends Phaser.Scene {
     // Other Groups
 
   };
-  
+
   createCharacter = () => {
     this.character = new Character(this, this.cameras.main.centerX, this.cameras.main.centerY);
   };
-  
+
   createMap = () => {
     this.map = new Map(this, this.cameras.main.displayWidth, this.cameras.main.displayHeight);
   };
@@ -96,6 +96,7 @@ export default class GameScene extends Phaser.Scene {
       C.Keycodes.DOWN,
       C.Keycodes.LEFT,
       C.Keycodes.RIGHT,
+      C.Keycodes.S,
     ];
 
     this.keys = {};
@@ -107,8 +108,8 @@ export default class GameScene extends Phaser.Scene {
       this.scene.launch('InGameMenuScene');
       this.scene.pause();
     })
-    
-    
+
+
     this.keys[C.Keycodes.UP].on('down', () => {
       this.character.setMoving('up', true);
     });
@@ -133,13 +134,18 @@ export default class GameScene extends Phaser.Scene {
     this.keys[C.Keycodes.RIGHT].on('up', () => {
       this.character.setMoving('right', false);
     });
+    this.keys[C.Keycodes.S].on('down', () => {
+      this.character.halt();
+    });
 
+
+    this.input.mouse.disableContextMenu();
   };
-  
+
   updateCharacter = (time, delta) => {
     this.character.update(time, delta);
   };
-  
+
   updateMap = (time, delta) => {
     this.map.update(time, delta);
   };

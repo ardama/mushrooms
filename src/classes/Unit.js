@@ -29,7 +29,7 @@ export default class Unit extends Phaser.GameObjects.Sprite {
       this.state.destroyed = false;
 
       this.state.level = 1;
-      
+
       this.state.missinghealth = 0;
 
       this.state.cooldowns = {
@@ -41,7 +41,7 @@ export default class Unit extends Phaser.GameObjects.Sprite {
   updateStats() {
     // const { level } = this.state;
     // const { base = {}, scaling = {} } = this.unitData;
-    // 
+    //
     // this.stats = {
     //   attackdamage: base.attackdamage + scaling.attackdamage * level,
     //   attackrange: base.attackrange,
@@ -54,20 +54,20 @@ export default class Unit extends Phaser.GameObjects.Sprite {
     //   magicresist: base.magicresist + scaling.magicresist * level,
     // };
   };
-  
+
   initializeHealthbar() {
     const healthbarCoordinates = this.getHealthbarCoordinates();
     const { healthbarColor } = this.typeData;
-    
+
     this.healthbar = new Phaser.GameObjects.Rectangle(
       this.scene, healthbarCoordinates.x, healthbarCoordinates.y, 30, 2, 0x333333,
     );
-    
+
     this.healthbarFill = new Phaser.GameObjects.Rectangle(
       this.scene, healthbarCoordinates.x, healthbarCoordinates.y, 30, 2, healthbarColor,
     );
   };
-  
+
   updateHealthbar() {
     // Update healthbar
     const healthbarCoordinates = this.getHealthbarCoordinates();
@@ -80,7 +80,7 @@ export default class Unit extends Phaser.GameObjects.Sprite {
 
   update(time, delta) {
   };
-  
+
   renderToScene() {
     const {
       appearance: {
@@ -91,7 +91,7 @@ export default class Unit extends Phaser.GameObjects.Sprite {
       }
     } = this.unitData;
     const { type } = this.typeData;
-    
+
     // Add to scene
     this.scene.add.existing(this);
     // this.play(animation);
@@ -99,13 +99,14 @@ export default class Unit extends Phaser.GameObjects.Sprite {
     this.scaleY = scaleY;
 
     // Add self to physics
+    this.scene.physics.add.existing(this);
+    this.body.setCollideWorldBounds(true);
     if (hitbox) {
-      this.scene.physics.add.existing(this);
       this.body.isCircle = true;
       this.body.width = hitbox.width;
       // this.scene[`${type}Hitboxes`].add(this);
     }
-  
+
     // Add attack range to scene/physics
     if (this.attackRange) {
       this.scene.add.existing(this.attackRange);
@@ -121,15 +122,15 @@ export default class Unit extends Phaser.GameObjects.Sprite {
     // Update rendered state
     this.state.rendered = true;
   };
-  
+
   getHealthbarCoordinates() {
-    
+    const coords = this.body ? this.body.center : this;
     return {
-      x: this.body ? this.body.x : this.x,
-      y: (this.body ? this.body.y : this.y) - 25,
+      x: coords.x,
+      y: coords.y - 20,
     };
   };
-  
+
   getBasicAttackTarget() {
 
   }
@@ -137,7 +138,7 @@ export default class Unit extends Phaser.GameObjects.Sprite {
   basicAttack(target) {
 
   };
-  
+
   receiveDamage(damage) {
     this.state.missinghealth += damage;
 
@@ -146,7 +147,7 @@ export default class Unit extends Phaser.GameObjects.Sprite {
       this.destroy();
     }
   }
-  
+
   destroy() {
     this.state.destroyed = true;
     if (this.attackRange) { this.attackRange.destroy(); }
