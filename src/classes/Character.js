@@ -63,7 +63,6 @@ export default class Champion extends Unit {
       const arrivedHorizontal = (velocity.x > 0 && center.x >= destination.x) || (velocity.x < 0 && center.x <= destination.x);
       const arrivedVertical = (velocity.y > 0 && center.y >= destination.y) || (velocity.y < 0 && center.y <= destination.y);
 
-      // Stop
       if (arrivedHorizontal && arrivedVertical) {
         this.halt();
       }
@@ -115,7 +114,9 @@ export default class Champion extends Unit {
   };
 
   halt() {
-    this.state.destination = null;
+    this.body.velocity.x = 0;
+    this.body.velocity.y = 0;
+
     this.state.moving = {
       up: false,
       down: false,
@@ -123,7 +124,9 @@ export default class Champion extends Unit {
       right: false,
     };
 
-    this.body.velocity.x = 0;
-    this.body.velocity.y = 0;
+    this.state.destination = null;
+
+    // set duration to 1 to force temporary stop
+    this.state.mouseDownDuration = 1;
   }
 }
