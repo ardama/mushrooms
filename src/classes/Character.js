@@ -56,7 +56,7 @@ export default class Champion extends Unit {
 
     const { destination } = this.state;
     if (destination) {
-      this.scene.physics.moveTo(this, destination.x, destination.y, 100);
+      this.scene.physics.moveTo(this, destination.x, destination.y, 300);
 
       // Compute destination arrival
       const { velocity, center } = this.body;
@@ -73,8 +73,8 @@ export default class Champion extends Unit {
       let directionX = (moving.left ? -1 : 0) + (moving.right ? 1 : 0);
       let directionY = (moving.up ? -1 : 0) + (moving.down ? 1 : 0);
 
-      let velocityX = directionX * 100;
-      let velocityY = directionY * 100;
+      let velocityX = directionX * 300;
+      let velocityY = directionY * 300;
       if (directionX !== 0 && directionY !== 0) {
         velocityX /= C.Misc.Root2;
         velocityY /= C.Misc.Root2;
