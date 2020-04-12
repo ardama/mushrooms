@@ -108,12 +108,12 @@ export default class Unit extends Phaser.GameObjects.Sprite {
     }
 
     // Add attack range to scene/physics
-    if (this.attackRange) {
-      this.scene.add.existing(this.attackRange);
-      this.scene.physics.add.existing(this.attackRange);
-      this.attackRange.body.setCircle(this.stats.attackrange);
-      // this.scene[`${type}Ranges`].add(this.attackRange);
-    }
+    // if (this.attackRange) {
+    //   this.scene.add.existing(this.attackRange);
+    //   this.scene.physics.add.existing(this.attackRange);
+    //   this.attackRange.body.setCircle(this.stats.attackrange);
+    //   // this.scene[`${type}Ranges`].add(this.attackRange);
+    // }
 
     // Add healthbar
     this.scene.add.existing(this.healthbar);

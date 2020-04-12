@@ -12,6 +12,18 @@ export default class Champion extends Unit {
   constructor(scene, x, y) {
     const unitData = { appearance: { key: 'tiles', hitbox: { width: 32 } } };
     super(scene, x, y, unitData, typeData);
+
+    this.los = 200;
+    this.attackRange = new Phaser.GameObjects.Zone(
+      scene, x, y,
+      this.los * 2,
+      this.los * 2,
+    );
+    this.attackRange.owner = this;
+
+    this.scene.add.existing(this.attackRange);
+    this.scene.physics.add.existing(this.attackRange);
+    this.attackRange.body.setCircle(this.los);
   }
 
   setInitialState() {
@@ -86,6 +98,15 @@ export default class Champion extends Unit {
 
     // Update healthbar
     this.updateHealthbar();
+    this.attackRange.x = this.x;
+    this.attackRange.y = this.y;
+    // this.scene.physics.overlap(this.attackRange, this.scene.map.visionLayer, (_, tile) => {
+    //
+    //   this.scene.map.revealTile(tile);
+    // });
+    const { center, radius } = this.attackRange.body;
+    const visibleTiles = this.scene.map.visionLayer.getTilesWithinShape(new Phaser.Geom.Circle(center.x, center.y, radius));
+    this.scene.map.revealTiles(visibleTiles);
   }
 
   setMoving(direction, value) {

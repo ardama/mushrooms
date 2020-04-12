@@ -11,6 +11,7 @@ export default class Map {
     this._generateMapData();
     this._buildGroundLayer();
     this._buildObjectLayer();
+    this._buildVisionLayer();
 
     this.width = this.columns * 32;
     this.height = this.rows * 32;
@@ -387,6 +388,19 @@ export default class Map {
 
   }
 
+  _buildVisionLayer() {
+    const map = this.scene.make.tilemap({
+      tileWidth: 32,
+      tileHeight: 32,
+      width: this.columns,
+      height: this.rows,
+    });
+    const tileset = map.addTilesetImage("terrain", "terrain", 32, 32, 0, 0);
+
+    this.visionLayer = map.createBlankDynamicLayer("vision", tileset);
+    this.visionLayer.fill(1);
+  };
+
 
   _forEachTile(callback) {
     this.tiles.forEach((row, r) => {
@@ -410,6 +424,13 @@ export default class Map {
 
   _isValidTileCoords(x, y) {
     return x >= 0 && x < this.columns && y >= 0 && y < this.rows;
+  }
+
+  revealTiles(tiles) {
+    tiles.forEach((tile) => {
+      tile.revealed = true;
+      this.visionLayer.putTileAt(-1, tile.x, tile.y);
+    });
   }
 };
 
