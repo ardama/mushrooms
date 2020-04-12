@@ -94,16 +94,16 @@ export default class Map {
         count: randomInt(2, 3),
         minWidth: 9,
         maxWidth: 12,
-        growthRate: 0.8,
+        growthRate: 1.0,
         roots: {
-          count: 8,
+          count: 14,
           angle: {
             min: -45,
             max: 45,
           },
           length: {
-            min: 8,
-            max: 12,
+            min: 4,
+            max: 8,
           },
         },
       },
@@ -233,7 +233,7 @@ export default class Map {
   };
 
   _buildLakes() {
-    this.mapFeatureOrigins.forests.forEach((origin, lakeIndex) => {
+    this.mapFeatureOrigins.lakes.forEach((origin, lakeIndex) => {
       const lakeTileCoords = this._getFeatureTileCoords(origin, this.mapFeatureData.lakes);
 
       lakeTileCoords.forEach(({x, y}) => {
@@ -243,7 +243,7 @@ export default class Map {
   };
 
   _buildRivers() {
-    this.mapFeatureOrigins.forests.forEach((origin, riverIndex) => {
+    this.mapFeatureOrigins.rivers.forEach((origin, riverIndex) => {
       const riverTileCoords = this._getFeatureTileCoords(origin, this.mapFeatureData.rivers);
 
       riverTileCoords.forEach(({x, y}) => {
@@ -253,42 +253,53 @@ export default class Map {
   };
 
   _getFeatureTileCoords(origin, config) {
-    const segments = [];
+    // Generate root segments. Map features will be grown off of roots growth points
+    const roots = [];
     let previousEndpoint = origin;
     let previousAngle = null;
-    while(segments.length < config.roots.count) {
-      const segment = this._createFeatureRootSegment(previousEndpoint, previousAngle, config)
-      segments.push(segment);
-      previousEndpoint = segment.endpoint;
-      previousAngle = segment.angle;
+    while(roots.length < config.roots.count) {
+      const root = this._createFeatureRoot(previousEndpoint, previousAngle, config)
+      roots.push(root);
+      previousEndpoint = root.endpoint;
+      previousAngle = root.angle;
     }
 
-    const unfilteredRootCoords = [origin];
-    segments.forEach((segment) => {
-      unfilteredRootCoords.push(...segment.points);
+    // Get list of viable growth points
+    const unfilteredGrowthPoints = [origin];
+    roots.forEach((root) => {
+      unfilteredGrowthPoints.push(...root.points);
     })
-    const rootCoords = unfilteredRootCoords.filter((coord) => this._isValidTileCoords(coord.x, coord.y));
-    const rootLength = segments.reduce((output, segment) => { return output + segment.distance; }, 0);
-    const size = randomInt(config.minWidth, config.maxWidth) * rootLength;
+    const growthPoints = unfilteredGrowthPoints.filter((point) => this._isValidTileCoords(point.x, point.y));
+
+    // Compute size of feature (in # of tiles)
+    const rootsLength = roots.reduce((output, root) => { return output + root.distance; }, 0);
+    const size = randomInt(config.minWidth, config.maxWidth) * rootsLength;
 
     const coordsMap = {};
-    const candidates = {};
-    rootCoords.forEach((coords) => {
-      coordsMap[pointToString(coords)] = {
-        x: coords.x,
-        y: coords.y,
+    let coordsCount = 0;
+    let candidates = {};
+
+    // Add growth points to feature coords
+    growthPoints.forEach((point) => {
+      const coordsStr = pointToString(point);
+      coordsMap[coordsStr] = {
+        x: point.x,
+        y: point.y,
         checkNeighbors: true,
       };
+      coordsCount++;
     });
 
-    if (Object.entries(coordsMap).length === 0) {
+    if (coordsCount === 0) {
       throw new Error('No Root Coords');
     }
 
-    while(Object.keys(coordsMap).length < size) {
+    while(coordsCount < size) {
+      // Update list of candidates tiles
       Object.entries(coordsMap).forEach(([coordStr, coord]) => {
         const { x: tileX, y: tileY, checkNeighbors } = coord;
         if (checkNeighbors) {
+          // Compute neighboring tile coordinates
           const neighbors = [
             { x: tileX + 1, y: tileY },
             { x: tileX - 1, y: tileY },
@@ -296,6 +307,7 @@ export default class Map {
             { x: tileX, y: tileY - 1 },
           ];
 
+          // Identify which neighbors are viable candidates
           neighbors.forEach((neighbor) => {
             const neighborStr = pointToString(neighbor);
             if (coordsMap[neighborStr]) {
@@ -315,8 +327,11 @@ export default class Map {
               x: neighbor.x,
               y: neighbor.y,
               chance: config.growthRate,
+              checkNeighbors: true,
             };
           });
+
+          // Avoid re-checking neighbors
           coord.checkNeighbors = false;
         }
       });
@@ -326,46 +341,51 @@ export default class Map {
       }
 
       shuffle(Object.entries(candidates)).forEach(([candidateStr, candidate]) => {
-        if (Object.keys(coordsMap).length < size) {
+        if (coordsCount < size) {
+          // Random chance to add candidate to final set of coords
           if (Math.random() <= candidate.chance) {
-            coordsMap[candidateStr] = {
-              x: candidate.x,
-              y: candidate.y,
-              checkNeighbors: true,
-            };
+            coordsMap[candidateStr] = candidate;
+            coordsCount++;
             delete candidates[candidateStr];
           }
         }
       });
     }
+
+    // Strip out unneeded data; randomize order
     return shuffle(Object.values(coordsMap)).map((coord) => ({ x: coord.x, y: coord.y }));
   }
 
-  _createFeatureRootSegment(previousEndpoint, previousAngle, config) {
-    const segment = {
+  _createFeatureRoot(previousEndpoint, previousAngle, config) {
+    // Initialize new feature root
+    const root = {
       points: [],
-      angle: (previousAngle || randomInt(0, 359)) + randomInt(config.roots.angle.min, config.roots.angle.max),
       endpoint: previousEndpoint,
+
+      // Randomize angle
+      angle: (previousAngle || randomInt(0, 359)) + randomInt(config.roots.angle.min, config.roots.angle.max),
+      // Randomize distance
       distance: randomInt(config.roots.length.min, config.roots.length.max),
     }
 
+    // Create growth point every 3 tiles along root
     const stepDistance = 3;
-    const verticalStepDistance = stepDistance * 32 * Math.sin(toRadians(segment.angle));
-    const horizontalStepDistance = stepDistance * 32 * Math.cos(toRadians(segment.angle));
+    const verticalStepDistance = stepDistance * 32 * Math.sin(toRadians(root.angle));
+    const horizontalStepDistance = stepDistance * 32 * Math.cos(toRadians(root.angle));
 
     const currentWorldCoords = this._toWorldCoords(previousEndpoint.x, previousEndpoint.y);
     let currentDistance = 0;
-    while (currentDistance < segment.distance) {
+    while (currentDistance < root.distance) {
       currentWorldCoords.x += horizontalStepDistance;
       currentWorldCoords.y += verticalStepDistance;
 
       const point = this._toTileCoords(currentWorldCoords.x, currentWorldCoords.y);
-      segment.points.push(point);
-      segment.endpoint = point;
+      root.points.push(point);
+      root.endpoint = point;
       currentDistance += stepDistance;
     };
 
-    return segment;
+    return root;
   };
 
   _buildGroundLayer() {
