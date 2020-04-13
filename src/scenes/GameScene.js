@@ -24,6 +24,7 @@ export default class GameScene extends Phaser.Scene {
     // });
 
     this.load.image("terrain", "assets/images/terrain.png");
+    this.load.image("foliage", "assets/images/foliage.png");
 
     this.physics.world.enable(this);
   }

@@ -1,4 +1,5 @@
 import { randomInt, shuffle, pointToString, stringToPoint, bounded, toRadians, toDegress } from '../utils/helpers.js';
+import C from '../utils/constants.js';
 
 export default class Map {
   constructor(scene) {
@@ -6,6 +7,33 @@ export default class Map {
 
     this.rows = 256;
     this.columns = 256;
+
+
+    this.tilemap = this.scene.make.tilemap({
+      tileWidth: 32,
+      tileHeight: 32,
+      width: this.columns,
+      height: this.rows,
+    });
+
+    this.tilesets = {
+      terrain: this.tilemap.addTilesetImage("terrain", "terrain", 32, 32, 0, 0),
+      foliage: this.tilemap.addTilesetImage("foliage", "foliage", 32, 32, 0, 0),
+    };
+
+    this.tilesheets = {
+      terrain: {
+        [C.Map.Terrain.Water]: 0,
+        [C.Map.Terrain.Rock]: 1,
+        [C.Map.Terrain.Sand]: 2,
+        [C.Map.Terrain.Grass]: 3,
+        [C.Map.Terrain.Dirt]: 4,
+        [C.Map.Terrain.Blank]: 5,
+      },
+      foliage: {
+
+      },
+    }
 
 
     this._generateMapData();
@@ -23,6 +51,7 @@ export default class Map {
   _generateMapData() {
     this._initializeMapTiles();
     this._buildMapFeatures();
+    this._addObjects();
   };
 
   _initializeMapTiles() {
@@ -45,9 +74,8 @@ export default class Map {
     this._buildEdges(2, 6);
     this._buildTowns();
     this._buildForests();
-    this._buildLakes();
     this._buildRivers();
-
+    this._buildLakes();
 
   };
 
@@ -185,14 +213,14 @@ export default class Map {
       for (let y = 0; y < topWidth; y++) {
         const tile = this._getTileAt(x, y);
         tile.edge = true;
-        tile.groundLayerTileIndex = 4;
+        tile.data.forest = true;
       }
       topWidth = bounded(topWidth + randomInt(-1, 1), minWidth, maxWidth);
 
       for (let y = 0; y < bottomWidth; y++) {
         const tile = this._getTileAt(x, this.rows - 1 - y);
         tile.edge = true;
-        tile.groundLayerTileIndex = 4;
+        tile.data.forest = true;
       }
       bottomWidth = bounded(bottomWidth + randomInt(-1, 1), minWidth, maxWidth);
     }
@@ -203,14 +231,14 @@ export default class Map {
       for (let x = 0; x < leftWidth; x++) {
         const tile = this._getTileAt(x, y);
         tile.edge = true;
-        tile.groundLayerTileIndex = 4;
+        tile.data.forest = true;
       }
       leftWidth = bounded(leftWidth + randomInt(-1, 1), minWidth, maxWidth);
 
       for (let x = 0; x < rightWidth; x++) {
         const tile = this._getTileAt(this.columns - 1 - x, y);
         tile.edge = true;
-        tile.groundLayerTileIndex = 4;
+        tile.data.forest = true;
       }
       rightWidth = bounded(rightWidth + randomInt(-1, 1), minWidth, maxWidth);
     }
@@ -227,8 +255,10 @@ export default class Map {
     this.mapFeatureOrigins.forests.forEach((origin, forestIndex) => {
       const forestTileCoords = this._getFeatureTileCoords(origin, this.mapFeatureData.forests);
       forestTileCoords.forEach(({x, y}) => {
-        this._getTileAt(x, y).groundLayerTileIndex = 4;
-      })
+        if (this._isValidTileCoords(x, y)) {
+          this._getTileAt(x, y).data.forest = true;
+        }
+      });
     })
   };
 
@@ -237,8 +267,10 @@ export default class Map {
       const lakeTileCoords = this._getFeatureTileCoords(origin, this.mapFeatureData.lakes);
 
       lakeTileCoords.forEach(({x, y}) => {
-        this._getTileAt(x, y).groundLayerTileIndex = 0;
-      })
+        if (this._isValidTileCoords(x, y)) {
+          this._getTileAt(x, y).data.lake = true;
+        }
+      });
     })
   };
 
@@ -247,8 +279,10 @@ export default class Map {
       const riverTileCoords = this._getFeatureTileCoords(origin, this.mapFeatureData.rivers);
 
       riverTileCoords.forEach(({x, y}) => {
-        this._getTileAt(x, y).groundLayerTileIndex = 0;
-      })
+        if (this._isValidTileCoords(x, y)) {
+          this._getTileAt(x, y).data.river = true;
+        }
+      });
     })
   };
 
@@ -273,7 +307,7 @@ export default class Map {
 
     // Compute size of feature (in # of tiles)
     const rootsLength = roots.reduce((output, root) => { return output + root.distance; }, 0);
-    const size = randomInt(config.minWidth, config.maxWidth) * rootsLength;
+    const size = randomInt(config.minWidth, config.maxWidth) * rootsLength * 0.8;
 
     const coordsMap = {};
     let coordsCount = 0;
@@ -314,12 +348,6 @@ export default class Map {
               return;
             }
             if (candidates[neighborStr]) {
-              return;
-            }
-            if (neighbor.x < 0 || neighbor.x >= this.columns) {
-              return;
-            }
-            if (neighbor.y < 0 || neighbor.y >= this.rows) {
               return;
             }
 
@@ -388,39 +416,103 @@ export default class Map {
     return root;
   };
 
-  _buildGroundLayer() {
-    const map = this.scene.make.tilemap({
-      tileWidth: 32,
-      tileHeight: 32,
-      width: this.columns,
-      height: this.rows,
-    });
-    const tileset = map.addTilesetImage("terrain", "terrain", 32, 32, 0, 0);
+  _addObjects() {
+    this._forEachTile((tile, x, y) => {
+      const r = Math.random();
 
-    this.groundLayer = map.createBlankDynamicLayer("ground", tileset);
+      if (tile.data.river) {
+        return;
+      } else if (tile.data.lake) {
+        return;
+      } else if (tile.data.forest) {
+        if (r < 0.01) {
+          tile.data.foliage = C.Map.Foliage.Mushrooms;
+        } else if (r < 0.02) {
+          tile.data.foliage = C.Map.Foliage.Mushroom;
+        } else if (r < 0.04) {
+          tile.data.foliage = C.Map.Foliage.Bush;
+        } else if (r < 0.06) {
+          tile.data.foliage = C.Map.Foliage.Rock;
+        } else if (r < 0.08) {
+          tile.data.foliage = C.Map.Foliage.Stump;
+        } else if (r < 0.4) {
+          tile.data.foliage = C.Map.Foliage.Tree;
+        }
+      } else {
+        if (r < 0.005) {
+          tile.data.foliage = C.Map.Foliage.Mushrooms;
+        } else if (r < 0.01) {
+          tile.data.foliage = C.Map.Foliage.Mushroom;
+        } else if (r < 0.015) {
+          tile.data.foliage = C.Map.Foliage.Bush;
+        } else if (r < 0.03) {
+          tile.data.foliage = C.Map.Foliage.Rock;
+        } else if (r < 0.04) {
+          tile.data.foliage = C.Map.Foliage.Stump;
+        } else if (r < 0.08) {
+          tile.data.foliage = C.Map.Foliage.Tree;
+        }
+      }
+    });
+  }
+
+  _buildGroundLayer() {
+    this.groundLayer = this.tilemap.createBlankDynamicLayer("ground", this.tilesets.terrain);
 
     this._forEachTile((tile, x, y) => {
-      this.groundLayer.putTileAt(tile.groundLayerTileIndex, x, y);
+      if (this._isValidTileCoords(x, y)) {
+        this.groundLayer.putTileAt(this._getTerrainTile(tile), x, y);
+      }
     })
   }
 
   _buildObjectLayer() {
+    this.objectLayer = this.tilemap.createBlankDynamicLayer("object", this.tilesets.foliage);
 
+    this._forEachTile((tile, x, y) => {
+      if (this._isValidTileCoords(x, y)) {
+        const tileBelow = this._isValidTileCoords(x, y + 1) ? this._getTileAt(x, y + 1) : null;
+        this.objectLayer.putTileAt(this._getObjectTile(tile, tileBelow), x, y);
+      }
+    })
   }
 
   _buildVisionLayer() {
-    const map = this.scene.make.tilemap({
-      tileWidth: 32,
-      tileHeight: 32,
-      width: this.columns,
-      height: this.rows,
+    this.visionLayer = this.tilemap.createBlankDynamicLayer("vision", this.tilesets.terrain);
+    this.visionLayer.fill(this.tilesheets.terrain[C.Map.Terrain.Blank]);
+    this.visionLayer.forEachTile((tile) => {
+      tile.alpha = 0.9;
     });
-    const tileset = map.addTilesetImage("terrain", "terrain", 32, 32, 0, 0);
-
-    this.visionLayer = map.createBlankDynamicLayer("vision", tileset);
-    this.visionLayer.fill(1);
   };
 
+  _getTerrainTile(tile) {
+    if (tile.data.lake) return this.tilesheets.terrain[C.Map.Terrain.Water];
+    if (tile.data.river) return this.tilesheets.terrain[C.Map.Terrain.Rock];
+    if (tile.data.forest) return this.tilesheets.terrain[C.Map.Terrain.Dirt];
+    return this.tilesheets.terrain[C.Map.Terrain.Grass];
+  };
+
+  _getObjectTile(tile, tileBelow) {
+    if (tileBelow && tileBelow.data.foliage === C.Map.Foliage.Tree) {
+      if (tile.data.foliage === C.Map.Foliage.Tree) {
+        return 1;
+      }
+      return 0;
+    } else if (tile.data.foliage === C.Map.Foliage.Tree) {
+      return 20;
+    } else if (tile.data.foliage === C.Map.Foliage.Mushroom) {
+      return 3;
+    } else if (tile.data.foliage === C.Map.Foliage.Mushrooms) {
+      return 23;
+    } else if (tile.data.foliage === C.Map.Foliage.Bush) {
+      return 21;
+    } else if (tile.data.foliage === C.Map.Foliage.Rock) {
+      return 22;
+    } else if (tile.data.foliage === C.Map.Foliage.Stump) {
+      return 28;
+    }
+    return -1;
+  }
 
   _forEachTile(callback) {
     this.tiles.forEach((row, r) => {
@@ -447,9 +539,16 @@ export default class Map {
   }
 
   revealTiles(tiles) {
+    if (this.visionLayer.visibleTiles) {
+      this.visionLayer.visibleTiles.forEach((tile) => {
+        tile.alpha = 0.5;
+      });
+    }
+    this.visionLayer.visibleTiles = tiles;
     tiles.forEach((tile) => {
-      tile.revealed = true;
-      this.visionLayer.putTileAt(-1, tile.x, tile.y);
+      // tile.revealed = true;
+      // this.visionLayer.putTileAt(-1, tile.x, tile.y);
+      tile.alpha = 0;
     });
   }
 };
@@ -458,6 +557,8 @@ class MapTile {
   constructor(map) {
     this.map = map;
     this.scene = map.scene;
+
+    this.data = {};
 
     this.groundLayerTileIndex = 3;
     this.objectLayerTileIndex = -1;
