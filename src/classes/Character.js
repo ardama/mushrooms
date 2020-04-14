@@ -96,17 +96,19 @@ export default class Champion extends Unit {
       this.body.velocity.y = velocityY;
     }
 
+    this.scene.physics.collide(this, this.scene.map.groundLayer);
+    this.scene.physics.collide(this, this.scene.map.objectLayer);
+    this.scene.physics.collide(this, this.scene.map.collectibleLayer);
+
     // Update healthbar
-    this.updateHealthbar();
+    this.updateHealthbar(this.body.x + 16, this.body.y - 6);
     this.attackRange.x = this.x;
     this.attackRange.y = this.y;
-    // this.scene.physics.overlap(this.attackRange, this.scene.map.visionLayer, (_, tile) => {
-    //
-    //   this.scene.map.revealTile(tile);
-    // });
+
     const { center, radius } = this.attackRange.body;
     const visibleTiles = this.scene.map.visionLayer.getTilesWithinShape(new Phaser.Geom.Circle(center.x, center.y, radius));
     this.scene.map.revealTiles(visibleTiles);
+
   }
 
   setMoving(direction, value) {

@@ -43,7 +43,7 @@ export default class GameScene extends Phaser.Scene {
     this.createGroups();
 
     this.createCharacter();
-    this.createMap();
+    this.createMap(time);
     this.createStructures();
     this.createEnemies();
 
@@ -80,8 +80,8 @@ export default class GameScene extends Phaser.Scene {
     this.character = new Character(this, this.cameras.main.centerX, this.cameras.main.centerY);
   };
 
-  createMap = () => {
-    this.map = new Map(this, this.cameras.main.displayWidth, this.cameras.main.displayHeight);
+  createMap = (time) => {
+    this.map = new Map(this, this.cameras.main.displayWidth, this.cameras.main.displayHeight, time);
   };
 
   createStructures = () => {

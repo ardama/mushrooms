@@ -68,13 +68,16 @@ export default class Unit extends Phaser.GameObjects.Sprite {
     );
   };
 
-  updateHealthbar() {
+  updateHealthbar(x, y) {
+    let coords = { x, y };
+    if (x === undefined && y === undefined) {
+      coords = this.getHealthbarCoordinates();
+    }
     // Update healthbar
-    const healthbarCoordinates = this.getHealthbarCoordinates();
-    this.healthbar.x = healthbarCoordinates.x;
-    this.healthbar.y = healthbarCoordinates.y;
-    this.healthbarFill.x = healthbarCoordinates.x;
-    this.healthbarFill.y = healthbarCoordinates.y;
+    this.healthbar.x = coords.x;
+    this.healthbar.y = coords.y;
+    this.healthbarFill.x = coords.x;
+    this.healthbarFill.y = coords.y;
     // this.healthbarFill.width = 30 * (1 - this.state.missinghealth / this.stats.maxhealth);
   }
 
