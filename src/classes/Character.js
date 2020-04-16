@@ -8,7 +8,7 @@ const typeData = {
   healthbarColor: 0x0044bb,
 };
 
-export default class Champion extends Unit {
+export default class Character extends Unit {
   constructor(scene, x, y) {
     const unitData = { appearance: { key: 'tiles', hitbox: { width: 32 } } };
     super(scene, x, y, unitData, typeData);
@@ -77,6 +77,9 @@ export default class Champion extends Unit {
 
       if (arrivedHorizontal && arrivedVertical) {
         this.halt();
+        this.finishAnimation();
+      } else {
+        this.triggerAnimation('teemo-base-walk-down', -1);
       }
 
     } else {
@@ -90,6 +93,13 @@ export default class Champion extends Unit {
       if (directionX !== 0 && directionY !== 0) {
         velocityX /= C.Misc.Root2;
         velocityY /= C.Misc.Root2;
+      }
+
+      if (velocityX !== 0 || velocityY !== 0) {
+        this.triggerAnimation('teemo-base-walk-down', -1);
+      } else {
+        this.halt();
+        this.finishAnimation();
       }
 
       this.body.velocity.x = velocityX;
@@ -111,8 +121,13 @@ export default class Champion extends Unit {
 
   }
 
+  renderToScene() {
+    super.renderToScene();
+  }
+
   setMoving(direction, value) {
     this.state.moving[direction] = value;
+    this.triggerAnimation('teemo-base-walk-down', -1);
 
     if (value) {
       this.state.destination = null;

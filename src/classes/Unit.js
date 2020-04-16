@@ -126,6 +126,23 @@ export default class Unit extends Phaser.GameObjects.Sprite {
     this.state.rendered = true;
   };
 
+  triggerAnimation(anim, repeat) {
+    if (anim !== this.animation) {
+      if (repeat !== undefined) {
+        this.anims.setRepeat(repeat);
+      }
+      this.anims.play(anim);
+      this.animation = anim;
+    }
+  }
+
+  finishAnimation() {
+    if (this.animation) {
+      this.anims.setRepeat(0);
+      this.animation = null;
+    }
+  }
+
   getHealthbarCoordinates() {
     const coords = this.body ? this.body.center : this;
     return {

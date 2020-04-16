@@ -1,9 +1,9 @@
 // import AnimatedTiles from 'phaser-animated-tiles/dist/AnimatedTiles.min.js';
+import A from '../data/Animations.js';
 import C from '../utils/constants.js';
 import D from '../data/GameData.js';
 import Character from '../classes/Character.js';
 import Map from '../classes/Map.js';
-// import makeAnimations from '../utils/animations';
 
 
 export default class GameScene extends Phaser.Scene {
@@ -19,12 +19,17 @@ export default class GameScene extends Phaser.Scene {
     //   spacing: 2,
     // });
 
-    // this.load.on('complete', () => {
-    //   makeAnimations(this);
-    // });
 
     this.load.image("terrain", "assets/images/terrain.png");
     this.load.image("foliage", "assets/images/foliage3.png");
+    this.load.spritesheet("teemo-base-walk-down", "assets/images/animations/teemo-base-walk-down.png", {
+      frameWidth: 32,
+      frameHeight: 32,
+    });
+
+    this.load.on('complete', () => {
+      A.createAnimations(this);
+    });
 
     this.physics.world.enable(this);
   }

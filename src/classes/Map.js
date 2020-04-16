@@ -442,11 +442,11 @@ export default class Map {
           tile.data.foliage.tile = C.Map.Foliage.Rock;
         } else if (r < 0.06) {
           tile.data.foliage.tile = C.Map.Foliage.Stump;
-        } else if (r < 0.12) {
+        } else if (r < 0.14) {
           tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.L1;
-        } else if (r < 0.16) {
-          tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.M1;
         } else if (r < 0.20) {
+          tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.M1;
+        } else if (r < 0.26) {
           tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.M2;
         }
       } else {
@@ -470,7 +470,6 @@ export default class Map {
   _spawnCollectible(tile, time, delta) {
     const timeElapsed = tile.data.collectible.modified ? time - tile.data.collectible.modified : 60000;
     const timeFactor = timeElapsed / (60 * 1000);
-    console.log(timeElapsed);
     const r = Math.random() / timeFactor;
     if (tile.data.edge) {
       return;
@@ -573,7 +572,7 @@ export default class Map {
         index = 73;
       } else if (tileBelow.data.foliage.tile === C.Map.Foliage.Tree.Pine.M1) {
         index = 113;
-      }      
+      }
     }
     if (index > 0) {
       if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.L1) {
@@ -584,8 +583,8 @@ export default class Map {
         index += 3;
       }
       return index;
-    } 
-      
+    }
+
     if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.L1) {
       index = 53;
     } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M2) {
