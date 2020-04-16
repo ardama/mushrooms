@@ -13,8 +13,13 @@ const Constants = {
       Blank: 'blank',
     },
     Foliage: {
-      Tree: 'tree',
-      TreeAutumn: 'tree_autumn',
+      Tree: {
+        Pine: {
+          "L1": "Pine_L1",
+          "M1": "Pine_M1",
+          "M2": "Pine_M2", 
+        }
+      },
       Mushroom: 'mushroom',
       Mushrooms: 'mushrooms',
       Stump: 'stump',

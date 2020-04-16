@@ -424,7 +424,13 @@ export default class Map {
       const r = Math.random();
 
       if (tile.data.edge) {
-        tile.data.foliage.tile = C.Map.Foliage.Tree;
+        if (r < 0.25) {
+          tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.L1;
+        } else if (r < 0.5) {
+          tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.M1;
+        } else if (r < 0.75) {
+          tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.M2;
+        }
       } else if (tile.data.river) {
         return;
       } else if (tile.data.lake) {
@@ -436,8 +442,12 @@ export default class Map {
           tile.data.foliage.tile = C.Map.Foliage.Rock;
         } else if (r < 0.06) {
           tile.data.foliage.tile = C.Map.Foliage.Stump;
-        } else if (r < 0.25) {
-          tile.data.foliage.tile = C.Map.Foliage.Tree;
+        } else if (r < 0.12) {
+          tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.L1;
+        } else if (r < 0.16) {
+          tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.M1;
+        } else if (r < 0.20) {
+          tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.M2;
         }
       } else {
         if (r < 0.005) {
@@ -446,8 +456,12 @@ export default class Map {
           tile.data.foliage.tile = C.Map.Foliage.Rock;
         } else if (r < 0.012) {
           tile.data.foliage.tile = C.Map.Foliage.Stump;
-        } else if (r < 0.03) {
-          tile.data.foliage.tile = C.Map.Foliage.Tree;
+        } else if (r < 0.018) {
+          tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.L1;
+        } else if (r < 0.024) {
+          tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.M1;
+        } else if (r < 0.030) {
+          tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.M2;
         }
       }
     });
@@ -551,29 +565,50 @@ export default class Map {
   };
 
   _getObjectTile(tile, tileBelow) {
-    if (tileBelow && tileBelow.data.foliage.tile === C.Map.Foliage.Tree) {
-      if (tile.data.foliage.tile === C.Map.Foliage.Tree) {
-        return 1;
-      }
-      return 0;
-    } else if (tile.data.foliage.tile === C.Map.Foliage.Tree) {
-      return 20;
-    } else if (tile.data.foliage.tile === C.Map.Foliage.Bush) {
-      return 21;
-    } else if (tile.data.foliage.tile === C.Map.Foliage.Rock) {
-      return 22;
-    } else if (tile.data.foliage.tile === C.Map.Foliage.Stump) {
-      return 28;
+    let index = -1;
+    if (tileBelow) {
+      if (tileBelow.data.foliage.tile === C.Map.Foliage.Tree.Pine.L1) {
+        index = 33;
+      } else if (tileBelow.data.foliage.tile === C.Map.Foliage.Tree.Pine.M2) {
+        index = 73;
+      } else if (tileBelow.data.foliage.tile === C.Map.Foliage.Tree.Pine.M1) {
+        index = 113;
+      }      
     }
-    return -1;
+    if (index > 0) {
+      if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.L1) {
+        index += 1;
+      } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M2) {
+        index += 2;
+      } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M1) {
+        index += 3;
+      }
+      return index;
+    } 
+      
+    if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.L1) {
+      index = 53;
+    } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M2) {
+      index = 93;
+    } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M1) {
+      index = 133;
+    } else if (tile.data.foliage.tile === C.Map.Foliage.Bush) {
+      index = -1;
+    } else if (tile.data.foliage.tile === C.Map.Foliage.Rock) {
+      index = -1;
+    } else if (tile.data.foliage.tile === C.Map.Foliage.Stump) {
+      index = -1;
+    }
+    return index;
   };
 
   _getCollectibleTile(tile) {
     if (tile.data.collectible.tile === C.Map.Foliage.Mushroom) {
-      return 3;
+      return -1;
     } else if (tile.data.collectible.tile === C.Map.Foliage.Mushrooms) {
-      return 23;
+      return -1;
     }
+    return -1;
   }
 
   _forEachTile(callback) {
