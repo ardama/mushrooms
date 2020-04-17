@@ -507,7 +507,7 @@ export default class Map {
 
   _buildObjectLayer() {
     this.objectLayer = this.tilemap.createBlankDynamicLayer("object", this.tilesets.foliage);
-    this.objectLayer.setCollision([1, 20, 21, 22, 28]);
+    this.objectLayer.setCollision([53, 93, 133, 34, 74, 114, 35, 75, 115, 36, 76, 116]);
     this.objectLayer.depth = 100;
 
     this._forEachTile((tile, x, y) => {
@@ -551,7 +551,7 @@ export default class Map {
     this.visionLayer.fill(this.tilesheets.terrain[C.Map.Terrain.Blank]);
 
     this.visionLayer.forEachTile((tile) => {
-      tile.alpha = 0.9;
+      tile.alpha = 1;
     });
   };
 
@@ -634,10 +634,10 @@ export default class Map {
     return x >= 0 && x < this.columns && y >= 0 && y < this.rows;
   }
 
-  revealTiles(tiles) {
+  revealTiles(outerTiles, middleTiles, innerTiles) {
     if (this.visibleTiles) {
       this.visibleTiles.forEach((tile) => {
-        tile.alpha = 0.5;
+        tile.alpha = 0.7;
 
         const collectibleTile = this.collectibleLayer.getTileAt(tile.x, tile.y);
         if (collectibleTile) {
@@ -645,14 +645,23 @@ export default class Map {
         }
       });
     }
-    this.visibleTiles = tiles;
-    tiles.forEach((tile) => {
-      tile.alpha = 0;
+
+    this.visibleTiles = outerTiles;
+    outerTiles.forEach((tile) => {
+      tile.alpha = .4;
 
       const collectibleTile = this.collectibleLayer.getTileAt(tile.x, tile.y);
       if (collectibleTile) {
           collectibleTile.alpha = 1;
       }
+    });
+
+    middleTiles.forEach((tile) => {
+      tile.alpha = .2;
+    });
+
+    innerTiles.forEach((tile) => {
+      tile.alpha = 0;
     });
   }
 };

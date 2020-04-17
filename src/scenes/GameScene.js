@@ -26,6 +26,14 @@ export default class GameScene extends Phaser.Scene {
       frameWidth: 32,
       frameHeight: 32,
     });
+    this.load.spritesheet("teemo-base-walk-left", "assets/images/animations/teemo-base-walk-left.png", {
+      frameWidth: 32,
+      frameHeight: 32,
+    });
+    this.load.spritesheet("teemo-base-walk-right", "assets/images/animations/teemo-base-walk-right.png", {
+      frameWidth: 32,
+      frameHeight: 32,
+    });
 
     this.load.on('complete', () => {
       A.createAnimations(this);

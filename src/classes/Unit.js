@@ -127,7 +127,7 @@ export default class Unit extends Phaser.GameObjects.Sprite {
   };
 
   triggerAnimation(anim, repeat) {
-    if (anim !== this.animation) {
+    if (anim && anim !== this.animation) {
       if (repeat !== undefined) {
         this.anims.setRepeat(repeat);
       }

@@ -13,7 +13,7 @@ export default class Character extends Unit {
     const unitData = { appearance: { key: 'tiles', hitbox: { width: 32 } } };
     super(scene, x, y, unitData, typeData);
 
-    this.los = 200;
+    this.los = 250;
     this.attackRange = new Phaser.GameObjects.Zone(
       scene, x, y,
       this.los * 2,
@@ -68,7 +68,7 @@ export default class Character extends Unit {
 
     const { destination } = this.state;
     if (destination) {
-      this.scene.physics.moveTo(this, destination.x, destination.y, 300);
+      this.scene.physics.moveTo(this, destination.x, destination.y, 120);
 
       // Compute destination arrival
       const { velocity, center } = this.body;
@@ -79,7 +79,16 @@ export default class Character extends Unit {
         this.halt();
         this.finishAnimation();
       } else {
-        this.triggerAnimation('teemo-base-walk-down', -1);
+        const vertical = Math.abs(velocity.y) > 1.5 * Math.abs(velocity.x);
+        if (vertical && velocity.y < 0) {
+          this.triggerAnimation('teemo-base-walk-down', -1);
+        } else if (vertical && velocity.y > 0) {
+          this.triggerAnimation('teemo-base-walk-down', -1);
+        } else if (velocity.x < 0) {
+          this.triggerAnimation('teemo-base-walk-left', -1);
+        } else if (velocity.x > 0) {
+          this.triggerAnimation('teemo-base-walk-right', -1);
+        }
       }
 
     } else {
@@ -88,17 +97,23 @@ export default class Character extends Unit {
       let directionX = (moving.left ? -1 : 0) + (moving.right ? 1 : 0);
       let directionY = (moving.up ? -1 : 0) + (moving.down ? 1 : 0);
 
-      let velocityX = directionX * 300;
-      let velocityY = directionY * 300;
+      let velocityX = directionX * 120;
+      let velocityY = directionY * 120;
       if (directionX !== 0 && directionY !== 0) {
         velocityX /= C.Misc.Root2;
         velocityY /= C.Misc.Root2;
       }
 
-      if (velocityX !== 0 || velocityY !== 0) {
+
+      if (velocityX < 0) {
+        this.triggerAnimation('teemo-base-walk-left', -1);
+      } else if (velocityX > 0) {
+        this.triggerAnimation('teemo-base-walk-right', -1);
+      } else if (velocityY < 0) {
+        this.triggerAnimation('teemo-base-walk-down', -1);
+      } else if (velocityY > 0) {
         this.triggerAnimation('teemo-base-walk-down', -1);
       } else {
-        this.halt();
         this.finishAnimation();
       }
 
@@ -116,8 +131,11 @@ export default class Character extends Unit {
     this.attackRange.y = this.y;
 
     const { center, radius } = this.attackRange.body;
-    const visibleTiles = this.scene.map.visionLayer.getTilesWithinShape(new Phaser.Geom.Circle(center.x, center.y, radius));
-    this.scene.map.revealTiles(visibleTiles);
+    const outerVisibleTiles = this.scene.map.visionLayer.getTilesWithinShape(new Phaser.Geom.Circle(center.x, center.y, radius));
+    const middleVisibleTiles = this.scene.map.visionLayer.getTilesWithinShape(new Phaser.Geom.Circle(center.x, center.y, radius * 0.92));
+    const innerVisibleTiles = this.scene.map.visionLayer.getTilesWithinShape(new Phaser.Geom.Circle(center.x, center.y, radius * 0.86));
+
+    this.scene.map.revealTiles(outerVisibleTiles, middleVisibleTiles, innerVisibleTiles);
 
   }
 
@@ -127,7 +145,6 @@ export default class Character extends Unit {
 
   setMoving(direction, value) {
     this.state.moving[direction] = value;
-    this.triggerAnimation('teemo-base-walk-down', -1);
 
     if (value) {
       this.state.destination = null;
