@@ -12,7 +12,6 @@ export default class GameScene extends Phaser.Scene {
   }
 
   preload() {
-    // this.load.atlas('mario-sprites', 'assets/mario-sprites.png', 'assets/mario-sprites.json');
     // this.load.spritesheet('tiles', 'assets/images/super-mario.png', {
     //   frameWidth: 16,
     //   frameHeight: 16,
@@ -21,16 +20,9 @@ export default class GameScene extends Phaser.Scene {
 
 
     this.load.image("terrain", "assets/images/terrain.png");
+    this.load.atlas("foliage_atlas", "assets/images/foliage3.png", "assets/images/foliage3.json");
     this.load.image("foliage", "assets/images/foliage3.png");
-    this.load.spritesheet("teemo-base-walk-down", "assets/images/animations/teemo-base-walk-down.png", {
-      frameWidth: 32,
-      frameHeight: 32,
-    });
-    this.load.spritesheet("teemo-base-walk-left", "assets/images/animations/teemo-base-walk-left.png", {
-      frameWidth: 32,
-      frameHeight: 32,
-    });
-    this.load.spritesheet("teemo-base-walk-right", "assets/images/animations/teemo-base-walk-right.png", {
+    this.load.spritesheet("teemo-base", "assets/images/animations/teemo-base.png", {
       frameWidth: 32,
       frameHeight: 32,
     });
@@ -86,7 +78,8 @@ export default class GameScene extends Phaser.Scene {
     this.enemyRanges = this.add.group();
 
     // Other Groups
-
+    this.foliage = this.add.group();
+    this.collectibles = this.add.group();
   };
 
   createCharacter = () => {

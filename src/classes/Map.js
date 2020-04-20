@@ -497,6 +497,7 @@ export default class Map {
   _buildGroundLayer() {
     this.groundLayer = this.tilemap.createBlankDynamicLayer("ground", this.tilesets.terrain);
     this.groundLayer.setCollision([C.Map.Terrain.Water]);
+    this.groundLayer.depth = 0;
 
     this._forEachTile((tile, x, y) => {
       if (this._isValidTileCoords(x, y)) {
@@ -507,46 +508,63 @@ export default class Map {
 
   _buildObjectLayer() {
     this.objectLayer = this.tilemap.createBlankDynamicLayer("object", this.tilesets.foliage);
-    this.objectLayer.setCollision([53, 93, 133, 34, 74, 114, 35, 75, 115, 36, 76, 116]);
-    this.objectLayer.depth = 100;
+    // this.objectLayer.setCollision([53, 93, 133, 34, 74, 114, 35, 75, 115, 36, 76, 116]);
+    this.objectLayer.setCollision([18]);
 
     this._forEachTile((tile, x, y) => {
       if (this._isValidTileCoords(x, y)) {
         const tileBelow = this._isValidTileCoords(x, y + 1) ? this._getTileAt(x, y + 1) : null;
-        this.objectLayer.putTileAt(this._getObjectTile(tile, tileBelow), x, y);
+        const key = this._getObjectImage(tile, tileBelow);
+        this.objectLayer.putTileAt(key ? 18 : -1, x, y);
+        // this.objectLayer.putTileAt(index !== -1 ? 18 : -1, x, y);
+
+        if (key) {
+          const image = this.scene.add.image(x * 32 + 16, y * 32, "foliage_atlas", key);
+          image.depth = image.y + (image.height / 2);
+          this.scene.foliage.add(image);
+          tile.image = image;
+          image.setVisible(false);
+        }
       }
     });
+
+    this._forEachTile((tile, x, y) => {
+    })
+  };
+
+  _updateObjectLayer() {
+
   }
 
   _buildCollectibleLayer() {
-    this.collectibleLayer = this.tilemap.createBlankDynamicLayer("collectible", this.tilesets.foliage);
-    this.collectibleLayer.setCollision([3, 23]);
-    this.collectibleLayer.depth = 101;
-
-    this._updateCollectibleLayer(null, null);
+    // this.collectibleLayer = this.tilemap.createBlankDynamicLayer("collectible", this.tilesets.foliage);
+    // this.collectibleLayer.setCollision([3, 23]);
+    // // this.collectibleLayer.depth = 101;
+    //
+    // this._updateCollectibleLayer(null, null);
   }
 
   _updateCollectibleLayer(time, delta) {
-    let elapsedTime;
-    if (this.collectiblesModified) {
-      elapsedTime = time - this.collectiblesModified;
-    };
-
-    // Check once every 10 frames
-    if (elapsedTime > 10 * (1 / 60)) {
-      this.visibleTiles.forEach((tile) => {
-        const virtualTile = this._getTileAt(tile.x, tile.y);
-        this._spawnCollectible(virtualTile, time, delta);
-        this.collectibleLayer.putTileAt(this._getCollectibleTile(virtualTile), virtualTile.x, virtualTile.y);
-      });
-    }
-
-    this.collectiblesModified = time;
+    // let elapsedTime;
+    // if (this.collectiblesModified) {
+    //   elapsedTime = time - this.collectiblesModified;
+    // };
+    //
+    // // Check once every 10 frames
+    // if (elapsedTime > 10 * (1 / 60)) {
+    //   this.visibleTiles.forEach((tile) => {
+    //     const virtualTile = this._getTileAt(tile.x, tile.y);
+    //     this._spawnCollectible(virtualTile, time, delta);
+    //     this.collectibleLayer.putTileAt(this._getCollectibleTile(virtualTile), virtualTile.x, virtualTile.y);
+    //   });
+    // }
+    //
+    // this.collectiblesModified = time;
   };
 
   _buildVisionLayer() {
     this.visionLayer = this.tilemap.createBlankDynamicLayer("vision", this.tilesets.terrain);
-    this.visionLayer.depth = 1000;
+    this.visionLayer.depth = 10000;
 
     this.visionLayer.fill(this.tilesheets.terrain[C.Map.Terrain.Blank]);
 
@@ -563,42 +581,51 @@ export default class Map {
     return this.tilesheets.terrain[C.Map.Terrain.Grass];
   };
 
-  _getObjectTile(tile, tileBelow) {
-    let index = -1;
-    if (tileBelow) {
-      if (tileBelow.data.foliage.tile === C.Map.Foliage.Tree.Pine.L1) {
-        index = 33;
-      } else if (tileBelow.data.foliage.tile === C.Map.Foliage.Tree.Pine.M2) {
-        index = 73;
-      } else if (tileBelow.data.foliage.tile === C.Map.Foliage.Tree.Pine.M1) {
-        index = 113;
-      }
-    }
-    if (index > 0) {
-      if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.L1) {
-        index += 1;
-      } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M2) {
-        index += 2;
-      } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M1) {
-        index += 3;
-      }
-      return index;
-    }
-
+  _getObjectImage(tile, tileBelow) {
+    let image;
     if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.L1) {
-      index = 53;
+      image = "tree_pine_L1";
     } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M2) {
-      index = 93;
+      image = "tree_pine_M2";
     } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M1) {
-      index = 133;
-    } else if (tile.data.foliage.tile === C.Map.Foliage.Bush) {
-      index = -1;
-    } else if (tile.data.foliage.tile === C.Map.Foliage.Rock) {
-      index = -1;
-    } else if (tile.data.foliage.tile === C.Map.Foliage.Stump) {
-      index = -1;
+      image = "tree_pine_M1";
     }
-    return index;
+    return image
+    // let index = -1;
+    // if (tileBelow) {
+    //   if (tileBelow.data.foliage.tile === C.Map.Foliage.Tree.Pine.L1) {
+    //     index = 33;
+    //   } else if (tileBelow.data.foliage.tile === C.Map.Foliage.Tree.Pine.M2) {
+    //     index = 73;
+    //   } else if (tileBelow.data.foliage.tile === C.Map.Foliage.Tree.Pine.M1) {
+    //     index = 113;
+    //   }
+    // }
+    // if (index > 0) {
+    //   if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.L1) {
+    //     index += 1;
+    //   } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M2) {
+    //     index += 2;
+    //   } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M1) {
+    //     index += 3;
+    //   }
+    //   return index;
+    // }
+    //
+    // if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.L1) {
+    //   index = 53;
+    // } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M2) {
+    //   index = 93;
+    // } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M1) {
+    //   index = 133;
+    // } else if (tile.data.foliage.tile === C.Map.Foliage.Bush) {
+    //   index = -1;
+    // } else if (tile.data.foliage.tile === C.Map.Foliage.Rock) {
+    //   index = -1;
+    // } else if (tile.data.foliage.tile === C.Map.Foliage.Stump) {
+    //   index = -1;
+    // }
+    // return index;
   };
 
   _getCollectibleTile(tile) {
@@ -635,13 +662,22 @@ export default class Map {
   }
 
   revealTiles(outerTiles, middleTiles, innerTiles) {
+    const tileSet = new Set();
+    outerTiles.forEach((tile) => {
+      tileSet.add(pointToString(tile.x, tile.y));
+    })
     if (this.visibleTiles) {
       this.visibleTiles.forEach((tile) => {
         tile.alpha = 0.7;
 
-        const collectibleTile = this.collectibleLayer.getTileAt(tile.x, tile.y);
-        if (collectibleTile) {
-            collectibleTile.alpha = 0;
+        // const collectibleTile = this.collectibleLayer.getTileAt(tile.x, tile.y);
+        // if (collectibleTile) {
+        //     collectibleTile.alpha = 0;
+        // }
+        const tileData = this._getTileAt(tile.x, tile.y);
+        if (tileData.image && !tileSet.has(pointToString(tile.x, tile.y))) {
+          tileData.image.setVisible(false);
+          // tileData.image.setActive(false);
         }
       });
     }
@@ -650,9 +686,17 @@ export default class Map {
     outerTiles.forEach((tile) => {
       tile.alpha = .4;
 
-      const collectibleTile = this.collectibleLayer.getTileAt(tile.x, tile.y);
-      if (collectibleTile) {
-          collectibleTile.alpha = 1;
+      // const collectibleTile = this.collectibleLayer.getTileAt(tile.x, tile.y);
+      // if (collectibleTile) {
+      //     collectibleTile.alpha = 1;
+      // }
+      const tileData = this._getTileAt(tile.x, tile.y);
+      if (tileData.image) {
+        tileData.image.setVisible(true);
+        // tileData.image.setActive(true);
+
+        // this.scene.physics.add.existing(image);
+        // image.body.setImmovable(true);
       }
     });
 

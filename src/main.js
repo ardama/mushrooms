@@ -24,4 +24,4 @@ const config = {
 };
 
 console.log('MAIN');
-const game = new Phaser.Game(config); // eslint-disable-line no-unused-vars
+window.game = new Phaser.Game(config); // eslint-disable-line no-unused-vars

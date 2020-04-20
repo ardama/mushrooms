@@ -81,7 +81,7 @@ export default class Character extends Unit {
       } else {
         const vertical = Math.abs(velocity.y) > 1.5 * Math.abs(velocity.x);
         if (vertical && velocity.y < 0) {
-          this.triggerAnimation('teemo-base-walk-down', -1);
+          this.triggerAnimation('teemo-base-walk-up', -1);
         } else if (vertical && velocity.y > 0) {
           this.triggerAnimation('teemo-base-walk-down', -1);
         } else if (velocity.x < 0) {
@@ -110,7 +110,7 @@ export default class Character extends Unit {
       } else if (velocityX > 0) {
         this.triggerAnimation('teemo-base-walk-right', -1);
       } else if (velocityY < 0) {
-        this.triggerAnimation('teemo-base-walk-down', -1);
+        this.triggerAnimation('teemo-base-walk-up', -1);
       } else if (velocityY > 0) {
         this.triggerAnimation('teemo-base-walk-down', -1);
       } else {
@@ -125,6 +125,8 @@ export default class Character extends Unit {
     this.scene.physics.collide(this, this.scene.map.objectLayer);
     this.scene.physics.collide(this, this.scene.map.collectibleLayer);
 
+    this.depth = Math.ceil(this.body.y + (this.body.height / 2));
+
     // Update healthbar
     this.updateHealthbar(this.body.x + 16, this.body.y - 6);
     this.attackRange.x = this.x;
@@ -136,11 +138,11 @@ export default class Character extends Unit {
     const innerVisibleTiles = this.scene.map.visionLayer.getTilesWithinShape(new Phaser.Geom.Circle(center.x, center.y, radius * 0.86));
 
     this.scene.map.revealTiles(outerVisibleTiles, middleVisibleTiles, innerVisibleTiles);
-
   }
 
   renderToScene() {
     super.renderToScene();
+    this.body.setSize(24, 16, true);
   }
 
   setMoving(direction, value) {

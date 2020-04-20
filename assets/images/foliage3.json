@@ -1,0 +1,28 @@
+{
+  "frames": [
+    {
+      "filename": "tree_pine_L1",
+      "frame": {"x":416,"y":32,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":416,"y":32,"w":32,"h":64},
+      "sourceSize": {"w":32,"h":64}
+    },
+    {
+      "filename": "tree_pine_M2",
+      "frame": {"x":416,"y":96,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":416,"y":96,"w":32,"h":64},
+      "sourceSize": {"w":32,"h":64}
+    },
+    {
+      "filename": "tree_pine_M1",
+      "frame": {"x":416,"y":160,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {"x":416,"y":160,"w":32,"h":64},
+      "sourceSize": {"w":32,"h":64}
+    }
+  ]
+}
