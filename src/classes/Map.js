@@ -8,17 +8,26 @@ export default class Map {
     this.rows = 256;
     this.columns = 256;
 
+    this.tilesize = 32;
+
 
     this.tilemap = this.scene.make.tilemap({
-      tileWidth: 32,
-      tileHeight: 32,
+      tileWidth: this.tilesize,
+      tileHeight: this.tilesize,
       width: this.columns,
       height: this.rows,
     });
 
+    this.tilemapFOW = this.scene.make.tilemap({
+      tileWidth: this.tilesize / 2,
+      tileHeight: this.tilesize / 2,
+      width: this.columns * 2,
+      height: this.rows * 2,
+    });
+
     this.tilesets = {
-      terrain: this.tilemap.addTilesetImage("terrain", "terrain", 32, 32, 0, 0),
-      foliage: this.tilemap.addTilesetImage("foliage", "foliage", 32, 32, 0, 0),
+      terrain: this.tilemap.addTilesetImage("terrain-extended", "terrain-extended", this.tilesize, this.tilesize, 1, 2),
+      foliage: this.tilemap.addTilesetImage("foliage", "foliage", this.tilesize, this.tilesize, 0, 0),
     };
 
     this.tilesheets = {
@@ -35,16 +44,17 @@ export default class Map {
       },
     }
 
-    this.visibleTiles = [];
+    this.visibleObjectTiles = [];
+    this.visibleFogTiles = [];
 
     this._generateMapData();
     this._buildGroundLayer();
     this._buildObjectLayer();
     this._buildCollectibleLayer();
-    this._buildVisionLayer();
+    this._buildFogLayer();
 
-    this.width = this.columns * 32;
-    this.height = this.rows * 32;
+    this.width = this.columns * this.tilesize;
+    this.height = this.rows * this.tilesize;
   }
 
   update(time, delta) {
@@ -401,8 +411,8 @@ export default class Map {
 
     // Create growth point every 3 tiles along root
     const stepDistance = 3;
-    const verticalStepDistance = stepDistance * 32 * Math.sin(toRadians(root.angle));
-    const horizontalStepDistance = stepDistance * 32 * Math.cos(toRadians(root.angle));
+    const verticalStepDistance = stepDistance * this.tilesize * Math.sin(toRadians(root.angle));
+    const horizontalStepDistance = stepDistance * this.tilesize * Math.cos(toRadians(root.angle));
 
     const currentWorldCoords = this._toWorldCoords(previousEndpoint.x, previousEndpoint.y);
     let currentDistance = 0;
@@ -516,10 +526,11 @@ export default class Map {
         const tileBelow = this._isValidTileCoords(x, y + 1) ? this._getTileAt(x, y + 1) : null;
         const key = this._getObjectImage(tile, tileBelow);
         this.objectLayer.putTileAt(key ? 18 : -1, x, y);
-        // this.objectLayer.putTileAt(index !== -1 ? 18 : -1, x, y);
 
         if (key) {
-          const image = this.scene.add.image(x * 32 + 16, y * 32, "foliage_atlas", key);
+          const imageX = x * this.tilesize + this.tilesize / 2;
+          const imageY = y * this.tilesize;
+          const image = this.scene.add.image(imageX, imageY, "foliage_atlas", key);
           image.depth = image.y + (image.height / 2);
           this.scene.foliage.add(image);
           tile.image = image;
@@ -552,7 +563,7 @@ export default class Map {
     //
     // // Check once every 10 frames
     // if (elapsedTime > 10 * (1 / 60)) {
-    //   this.visibleTiles.forEach((tile) => {
+    //   this.visibleObjectTiles.forEach((tile) => {
     //     const virtualTile = this._getTileAt(tile.x, tile.y);
     //     this._spawnCollectible(virtualTile, time, delta);
     //     this.collectibleLayer.putTileAt(this._getCollectibleTile(virtualTile), virtualTile.x, virtualTile.y);
@@ -562,14 +573,14 @@ export default class Map {
     // this.collectiblesModified = time;
   };
 
-  _buildVisionLayer() {
-    this.visionLayer = this.tilemap.createBlankDynamicLayer("vision", this.tilesets.terrain);
-    this.visionLayer.depth = 10000;
+  _buildFogLayer() {
+    this.fogLayer = this.tilemapFOW.createBlankDynamicLayer("vision", this.tilesets.terrain);
+    this.fogLayer.depth = 10000;
 
-    this.visionLayer.fill(this.tilesheets.terrain[C.Map.Terrain.Blank]);
+    this.fogLayer.fill(this.tilesheets.terrain[C.Map.Terrain.Blank]);
 
-    this.visionLayer.forEachTile((tile) => {
-      tile.alpha = 1;
+    this.fogLayer.forEachTile((tile) => {
+      tile.setAlpha(1);
     });
   };
 
@@ -650,63 +661,63 @@ export default class Map {
   }
 
   _toWorldCoords(x, y) {
-    return { x: 16 + x * 32, y: 16 + y * 32 };
+    const half = this.tilesize / 2;
+    return { x: half + x * this.tilesize, y: half + y * this.tilesize };
   }
 
   _toTileCoords(x, y) {
-    return { x: Math.floor(x / 32), y: Math.floor(y / 32) };
+    return { x: Math.floor(x / this.tilesize), y: Math.floor(y / this.tilesize) };
   }
 
   _isValidTileCoords(x, y) {
     return x >= 0 && x < this.columns && y >= 0 && y < this.rows;
   }
 
-  revealTiles(outerTiles, middleTiles, innerTiles) {
-    const tileSet = new Set();
-    outerTiles.forEach((tile) => {
-      tileSet.add(pointToString(tile.x, tile.y));
-    })
-    if (this.visibleTiles) {
-      this.visibleTiles.forEach((tile) => {
-        tile.alpha = 0.7;
+  revealTiles(visibleObjectTiles, visibleFogTilesOuter, visibleFogTilesInner) {
+    // Create set for easier tile lookup
+    const objectTileSet = new Set();
+    visibleObjectTiles.forEach((tile) => {
+      objectTileSet.add(pointToString(tile));
+    });
 
-        // const collectibleTile = this.collectibleLayer.getTileAt(tile.x, tile.y);
-        // if (collectibleTile) {
-        //     collectibleTile.alpha = 0;
-        // }
+    // Hide old visible tiles
+    if (this.visibleObjectTiles) {
+      this.visibleObjectTiles.forEach((tile) => {
         const tileData = this._getTileAt(tile.x, tile.y);
-        if (tileData.image && !tileSet.has(pointToString(tile.x, tile.y))) {
+        if (tileData.image && !objectTileSet.has(pointToString(tile))) {
           tileData.image.setVisible(false);
-          // tileData.image.setActive(false);
         }
       });
     }
 
-    this.visibleTiles = outerTiles;
-    outerTiles.forEach((tile) => {
-      tile.alpha = .4;
-
-      // const collectibleTile = this.collectibleLayer.getTileAt(tile.x, tile.y);
-      // if (collectibleTile) {
-      //     collectibleTile.alpha = 1;
-      // }
+    // Reveal new visible tiles
+    visibleObjectTiles.forEach((tile) => {
       const tileData = this._getTileAt(tile.x, tile.y);
       if (tileData.image) {
         tileData.image.setVisible(true);
-        // tileData.image.setActive(true);
-
-        // this.scene.physics.add.existing(image);
-        // image.body.setImmovable(true);
       }
     });
 
-    middleTiles.forEach((tile) => {
-      tile.alpha = .2;
+    // Update cached visible tiles
+    this.visibleObjectTiles = visibleObjectTiles;
+
+    // Reset old fog tiles
+    if (this.visibleFogTiles) {
+      this.visibleFogTiles.forEach((tile) => {
+        tile.setAlpha(0.5);
+      });
+    }
+
+    // Reveal new fog tiles
+    visibleFogTilesOuter.forEach((tile) => {
+      tile.setAlpha(.2);
+    });
+    visibleFogTilesInner.forEach((tile) => {
+      tile.setAlpha(0);
     });
 
-    innerTiles.forEach((tile) => {
-      tile.alpha = 0;
-    });
+    // Update cached fog tiles
+    this.visibleFogTiles = visibleFogTilesOuter;
   }
 };
 
