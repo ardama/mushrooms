@@ -1,5 +1,6 @@
 import { randomInt, shuffle, pointToString, stringToPoint, bounded, toRadians, toDegress } from '../utils/helpers.js';
 import C from '../utils/constants.js';
+import MapQuadrantData from '../data/MapQuadrants.js';
 
 export default class Map {
   constructor(scene) {
@@ -63,7 +64,8 @@ export default class Map {
 
   _generateMapData() {
     this._initializeMapTiles();
-    this._buildMapFeatures();
+    this._buildQuadrants();
+    // this._buildMapFeatures();
     this._addObjects();
   };
 
@@ -78,6 +80,10 @@ export default class Map {
     });
 
     this.tiles = seal ? Object.seal(rows) : rows;
+  };
+
+  _buildQuadrants() {
+    this.quadrants = [0, 1, 2, 3].map(() => new MapQuadrant());
   };
 
   _buildMapFeatures() {
@@ -738,3 +744,19 @@ class MapTile {
     this.objectLayerTileIndex = -1;
   }
 };
+
+class MapQuadrant {
+  constructor() {
+    // Get quandrant shapes/layout
+    this.shapes = MapQuadrantData[0].shapes
+
+    // Assign each quandrant chunk a shape and chunk index
+
+    // Apply quadrant transformations to quadrant chunks
+
+    // Fetch raw shape chunks for each quadrant chunk
+
+    // Apply transformations to shape chunks
+
+  }
+}

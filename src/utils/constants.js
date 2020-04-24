@@ -17,7 +17,7 @@ const Constants = {
         Pine: {
           "L1": "Pine_L1",
           "M1": "Pine_M1",
-          "M2": "Pine_M2", 
+          "M2": "Pine_M2",
         }
       },
       Mushroom: 'mushroom',
@@ -26,8 +26,18 @@ const Constants = {
       Bush: 'bush',
       BushAutumn: 'bush_autumn',
       Rock: 'rock',
-    }
-  }
+    },
+    Shapes: {
+      Size4: {
+        _4: '_4',
+        _2_2: '_2_2',
+      },
+      Size6: {
+        _4_2: '_4_2',
+        _3_3: '_3_3',
+      },
+    },
+  },
 };
 
 export default Constants;
