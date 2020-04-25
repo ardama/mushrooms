@@ -61,3 +61,29 @@ export function stringToPoint(str) {
   const [x, y] = str.split(',');
   return { x: parseInt(x, 10), y: parseInt(y, 10) };
 }
+
+export function arrayToGrid(arr, rows, columns) {
+  const grid = [...Array(rows)].map((_, r) => {
+    const row = [...Array(columns)].map((_, c) => {
+      const index = r * columns + c;
+      return arr[index];
+    });
+    return row;
+  });
+  return grid;
+};
+
+export function rotateGrid(grid) {
+  const maxR = Math.floor(grid.length / 2);
+  const maxC = grid.length - 1;
+  for (let r = 0; r < maxR; r++) {
+    for (let c = r; c < maxC - r; c++) {
+      const first = grid[r][c];
+      grid[r][c] = grid[maxC - c][r];
+      grid[maxC - c][r] = grid[maxC - r][maxC - c];
+      grid[maxC - r][maxC - c] = grid[c][maxC - r]
+      grid[c][maxC - r] = first;
+    }
+  }
+  return grid;
+}

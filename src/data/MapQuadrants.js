@@ -28,7 +28,7 @@ const MapQuadrants = [
           y: 0,
         },
         rotations: 3,
-        mirrored: false,
+        mirrored: true,
       },
       {
         key: _2_2,

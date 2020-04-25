@@ -134,8 +134,8 @@ export default class Character extends Unit {
 
     const { center, radius } = this.attackRange.body;
     const visibleObjectTiles = this.scene.map.objectLayer.getTilesWithinShape(new Phaser.Geom.Circle(center.x, center.y, radius));
-    const visibleFogTilesOuter = this.scene.map.fogLayer.getTilesWithinShape(new Phaser.Geom.Circle(center.x * 2, center.y * 2, radius * 2));
-    const visibleFogTilesInner = this.scene.map.fogLayer.getTilesWithinShape(new Phaser.Geom.Circle(center.x * 2, center.y * 2, (radius * 0.95) * 2));
+    const visibleFogTilesOuter = this.scene.map.fogLayer.getTilesWithinShape(new Phaser.Geom.Circle(center.x, center.y, radius));
+    const visibleFogTilesInner = this.scene.map.fogLayer.getTilesWithinShape(new Phaser.Geom.Circle(center.x, center.y, (radius * 0.95)));
     this.scene.map.revealTiles(visibleObjectTiles, visibleFogTilesOuter, visibleFogTilesInner);
   }
 
