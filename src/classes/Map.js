@@ -1,6 +1,7 @@
 import { randomInt, shuffle, pointToString, stringToPoint, bounded, toRadians, toDegress } from '../utils/helpers.js';
 import C from '../utils/constants.js';
 import MapQuadrantData from '../data/MapQuadrants.js';
+import MapShapeData from '../data/MapShapes.js';
 
 export default class Map {
   constructor(scene) {
@@ -750,7 +751,14 @@ class MapQuadrant {
     // Get quandrant shapes/layout
     this.shapes = MapQuadrantData[0].shapes
 
+    this.grid = [Array(4), Array(4), Array(4), Array(4)];
+    
     // Assign each quandrant chunk a shape and chunk index
+    this.shapes.forEach((shape) => {
+      this._addShapeToGrid(shape);
+    });
+    
+    console.log(this.grid;)
 
     // Apply quadrant transformations to quadrant chunks
 
@@ -759,4 +767,30 @@ class MapQuadrant {
     // Apply transformations to shape chunks
 
   }
+  
+  _addShapeToGrid(shape) {
+    const { key, origin, rotations, mirrored } = shape;
+    const { coordinates } = MapShapeData[key];
+    
+    coordinates.forEach((coord, index) => {
+      const transformed = { x: coord.x, y: coord.y };
+      if (mirrored) {
+        transformed.y = -transformed.y;
+      }
+      
+      [...Array(rotations)].forEach(() => {
+        const rotatedY = transformed.x;
+        const rotatedX = -transformed.y;
+        transformed.x = rotatedX;
+        transformed.y = rotatedY
+      });
+      
+      const translated = {
+        x: transformed.x + origin.x,
+        y: transformed.y + origin.y,
+      };
+      
+      this.grid[translated.y][translated.x] = `${key}::${index}`;
+    });
+  };  
 }

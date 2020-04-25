@@ -1,4 +1,5 @@
 import C from '../utils/constants.js';
+import Shapes from './MapShapes.js';
 
 const {
   Size4: {
@@ -13,7 +14,7 @@ const MapQuadrants = [
     shapes: [
       {
         key: _4_2,
-        location: {
+        origin: {
           x: 0,
           y: 0,
         },
@@ -22,16 +23,16 @@ const MapQuadrants = [
       },
       {
         key: _3_3,
-        location: {
+        origin: {
           x: 1,
           y: 0,
         },
-        rotations: 1,
+        rotations: 3,
         mirrored: false,
       },
       {
         key: _2_2,
-        location: {
+        origin: {
           x: 2,
           y: 2,
         },
