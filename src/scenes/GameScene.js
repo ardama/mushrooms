@@ -21,7 +21,7 @@ export default class GameScene extends Phaser.Scene {
 
     this.load.image("terrain", "assets/images/terrain.png");
     this.load.image("terrain-extended", "assets/images/terrain-extended.png");
-    this.load.atlas("foliage_atlas", "assets/images/foliage3.png", "assets/images/foliage3.json");
+    this.load.atlas("foliage_atlas", "assets/images/foliage4.png", "assets/images/foliage4.json");
     this.load.image("foliage", "assets/images/foliage3.png");
     this.load.spritesheet("teemo-base", "assets/images/animations/teemo-base.png", {
       frameWidth: 32,
@@ -79,8 +79,8 @@ export default class GameScene extends Phaser.Scene {
     this.enemyRanges = this.add.group();
 
     // Other Groups
-    this.foliage = this.add.group();
-    this.collectibles = this.add.group();
+    this.foliageGroup = this.add.group();
+    this.collectiblesGroup = this.add.group();
   };
 
   createCharacter = () => {

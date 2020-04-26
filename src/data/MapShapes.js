@@ -5,7 +5,7 @@ const {
     _4, _2_2
   },
   Size6: {
-    _4_2, _3_3
+    _4_2, _2_2_2
   }
 } = C.Map.Shapes;
 
@@ -16,14 +16,11 @@ const MapShapes = {
       { x: 0, y: 1 },   //  |_|
       { x: 0, y: 2 },   //  |_|
       { x: 0, y: 3 },   //  |_|
-
-      { x: 0, y: 0 },   //  |_|
-      { x: -1, y: 0 },  //  |_|
-      { x: -2, y: 0 },  //  |_|
-      { x: -3, y: 0 },  //  |_|
-
-
     ],
+    symmetry: {
+      vertical: true,
+      horizontal: true,
+    },
     variants: [
       {
         rotations: 0,
@@ -88,6 +85,10 @@ const MapShapes = {
       { x: 1, y: 0 },   //
       { x: 1, y: 1 },   //
     ],
+    symmetry: {
+      vertical: true,
+      horizontal: true,
+    },
     variants: [
       {
         rotations: 0,
@@ -207,8 +208,11 @@ const MapShapes = {
       { x: 0, y: 3 },   //  |_|_|
       { x: 1, y: 2 },
       { x: 1, y: 3 },
-
     ],
+    symmetry: {
+      vertical: false,
+      horizontal: false,
+    },
     variants: [
       {
         rotations: 0,
@@ -344,36 +348,51 @@ const MapShapes = {
       },
     ],
   },
-  _3_3: {
+  _2_2_2: {
     coordinates: [      //   _ _
       { x: 0, y: 0 },   //  |_|_|
       { x: 0, y: 1 },   //  |_|_|
-      { x: 0, y: 2 },   //  |_|_|
-      { x: 1, y: 0 },
+      { x: 1, y: 0 },   //  |_|_|
       { x: 1, y: 1 },
-      { x: 1, y: 2 },
+      { x: 2, y: 0 },
+      { x: 2, y: 1 },
     ],
+    symmetry: {
+      vertical: true,
+      horizontal: true,
+    },
     variants: [
       {
         rotations: 0,
         chunks: [
           { x: 6, y: 0 },
           { x: 6, y: 1 },
-          { x: 6, y: 2 },
           { x: 7, y: 0 },
           { x: 7, y: 1 },
-          { x: 7, y: 2 },
+          { x: 8, y: 0 },
+          { x: 8, y: 1 },
         ],
       },
       {
         rotations: 0,
         chunks: [
+          { x: 6, y: 2 },
           { x: 6, y: 3 },
+          { x: 7, y: 2 },
+          { x: 7, y: 3 },
+          { x: 8, y: 2 },
+          { x: 8, y: 3 },
+        ],
+      },
+      {
+        rotations: 0,
+        chunks: [
           { x: 6, y: 4 },
           { x: 6, y: 5 },
-          { x: 7, y: 3 },
           { x: 7, y: 4 },
           { x: 7, y: 5 },
+          { x: 8, y: 4 },
+          { x: 8, y: 5 },
         ],
       },
       {
@@ -381,85 +400,63 @@ const MapShapes = {
         chunks: [
           { x: 6, y: 6 },
           { x: 6, y: 7 },
-          { x: 6, y: 8 },
           { x: 7, y: 6 },
           { x: 7, y: 7 },
-          { x: 7, y: 8 },
-        ],
-      },
-      {
-        rotations: 0,
-        chunks: [
-          { x: 6, y: 9 },
-          { x: 6, y: 10 },
-          { x: 6, y: 11 },
-          { x: 7, y: 9 },
-          { x: 7, y: 10 },
-          { x: 7, y: 11 },
-        ],
-      },
-      {
-        rotations: 0,
-        chunks: [
-          { x: 8, y: 0 },
-          { x: 8, y: 1 },
-          { x: 8, y: 2 },
-          { x: 9, y: 0 },
-          { x: 9, y: 1 },
-          { x: 9, y: 2 },
-        ],
-      },
-      {
-        rotations: 0,
-        chunks: [
-          { x: 8, y: 3 },
-          { x: 8, y: 4 },
-          { x: 8, y: 5 },
-          { x: 9, y: 3 },
-          { x: 9, y: 4 },
-          { x: 9, y: 5 },
-        ],
-      },
-      {
-        rotations: 0,
-        chunks: [
           { x: 8, y: 6 },
           { x: 8, y: 7 },
-          { x: 8, y: 8 },
-          { x: 9, y: 6 },
-          { x: 9, y: 7 },
-          { x: 9, y: 8 },
         ],
       },
       {
         rotations: 0,
         chunks: [
+          { x: 6, y: 8 },
+          { x: 6, y: 9 },
+          { x: 7, y: 8 },
+          { x: 7, y: 9 },
+          { x: 8, y: 8 },
           { x: 8, y: 9 },
+        ],
+      },
+      {
+        rotations: 0,
+        chunks: [
+          { x: 6, y: 10 },
+          { x: 6, y: 11 },
+          { x: 7, y: 10 },
+          { x: 7, y: 11 },
           { x: 8, y: 10 },
           { x: 8, y: 11 },
-          { x: 9, y: 9 },
-          { x: 9, y: 10 },
-          { x: 9, y: 11 },
         ],
       },
       {
         rotations: 0,
         chunks: [
+          { x: 9, y: 0 },
+          { x: 9, y: 1 },
           { x: 10, y: 0 },
           { x: 10, y: 1 },
-          { x: 10, y: 2 },
           { x: 11, y: 0 },
           { x: 11, y: 1 },
-          { x: 11, y: 2 },
         ],
       },
       {
         rotations: 0,
         chunks: [
+          { x: 9, y: 2 },
+          { x: 9, y: 3 },
+          { x: 10, y: 2 },
           { x: 10, y: 3 },
+          { x: 11, y: 2 },
+          { x: 11, y: 3 },
+        ],
+      },
+      {
+        rotations: 0,
+        chunks: [
+          { x: 9, y: 4 },
+          { x: 9, y: 5 },
           { x: 10, y: 4 },
           { x: 10, y: 5 },
-          { x: 11, y: 3 },
           { x: 11, y: 4 },
           { x: 11, y: 5 },
         ],
@@ -467,21 +464,32 @@ const MapShapes = {
       {
         rotations: 0,
         chunks: [
+          { x: 9, y: 6 },
+          { x: 9, y: 7 },
           { x: 10, y: 6 },
           { x: 10, y: 7 },
-          { x: 10, y: 8 },
           { x: 11, y: 6 },
           { x: 11, y: 7 },
-          { x: 11, y: 8 },
         ],
       },
       {
         rotations: 0,
         chunks: [
+          { x: 9, y: 8 },
+          { x: 9, y: 9 },
+          { x: 10, y: 8 },
           { x: 10, y: 9 },
+          { x: 11, y: 8 },
+          { x: 11, y: 9 },
+        ],
+      },
+      {
+        rotations: 0,
+        chunks: [
+          { x: 9, y: 10 },
+          { x: 9, y: 11 },
           { x: 10, y: 10 },
           { x: 10, y: 11 },
-          { x: 11, y: 9 },
           { x: 11, y: 10 },
           { x: 11, y: 11 },
         ],

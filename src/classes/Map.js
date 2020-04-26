@@ -1,5 +1,6 @@
 import { randomInt, shuffle, pointToString, stringToPoint, bounded, toRadians, arrayToGrid, rotateGrid } from '../utils/helpers.js';
 import C from '../utils/constants.js';
+import M from '../data/MushroomData.js';
 import MapQuadrantData from '../data/MapQuadrants.js';
 import MapShapeData from '../data/MapShapes.js';
 import MapChunkData from '../data/MapChunks.js';
@@ -443,12 +444,18 @@ export default class Map {
       const r = Math.random();
 
       if (tile.data.edge) {
-        if (r < 0.25) {
-          tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.L1;
-        } else if (r < 0.5) {
-          tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.M1;
-        } else if (r < 0.75) {
-          tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.M2;
+        if (r < 0.2) {
+          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.L1_A;
+        } else if (r < 0.6) {
+          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.L1_B;
+        } else if (r < 0.7) {
+          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.L1M1_A;
+        } else if (r < 0.8) {
+          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.M2_A;
+        } else if (r < 0.9) {
+          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.M2_B;
+        } else {
+          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.M3_A;
         }
       } else if (tile.data.river) {
         return;
@@ -456,61 +463,100 @@ export default class Map {
         return;
       } else if (tile.data.forest) {
         if (r < 0.02) {
-          tile.data.foliage.tile = C.Map.Foliage.Bush;
+          // tile.data.foliage.image = C.Map.Foliage.Bush;
         } else if (r < 0.04) {
-          tile.data.foliage.tile = C.Map.Foliage.Rock;
+          // tile.data.foliage.image = C.Map.Foliage.Rock;
         } else if (r < 0.06) {
-          tile.data.foliage.tile = C.Map.Foliage.Stump;
-        } else if (r < 0.14) {
-          tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.L1;
+          // tile.data.foliage.image = C.Map.Foliage.Stump;
+        } else if (r < 0.10) {
+          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.L1_A;
+        } else if (r < 0.18) {
+          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.L1_B;
         } else if (r < 0.20) {
-          tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.M1;
+          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.L1M1_A;
+        } else if (r < 0.22) {
+          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.M2_A;
+        } else if (r < 0.24) {
+          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.M2_B;
         } else if (r < 0.26) {
-          tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.M2;
+          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.M3_A;
         }
       } else {
         if (r < 0.005) {
-          tile.data.foliage.tile = C.Map.Foliage.Bush;
+          // tile.data.foliage.image = C.Map.Foliage.Bush;
         } else if (r < 0.01) {
-          tile.data.foliage.tile = C.Map.Foliage.Rock;
+          // tile.data.foliage.image = C.Map.Foliage.Rock;
         } else if (r < 0.012) {
-          tile.data.foliage.tile = C.Map.Foliage.Stump;
+          // tile.data.foliage.image = C.Map.Foliage.Stump;
         } else if (r < 0.018) {
-          tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.L1;
-        } else if (r < 0.024) {
-          tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.M1;
-        } else if (r < 0.030) {
-          tile.data.foliage.tile = C.Map.Foliage.Tree.Pine.M2;
+          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.L1_A;
+        } else if (r < 0.028) {
+          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.L1_B;
+        } else if (r < 0.031) {
+          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.L1M1_A;
+        } else if (r < 0.034) {
+          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.M2_A;
+        } else if (r < 0.037) {
+          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.M2_B;
+        } else if (r < 0.040) {
+          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.M3_A;
         }
       }
     });
   }
 
   _spawnCollectible(tile, time, delta) {
-    const timeElapsed = tile.data.collectible.modified ? time - tile.data.collectible.modified : 60000;
+    let spawned = false;
+    const timeElapsed = tile.data.collectible.modified ? time - tile.data.collectible.modified : (60 * 1000);
     const timeFactor = timeElapsed / (60 * 1000);
     const r = Math.random() / timeFactor;
-    if (tile.data.edge) {
-      return;
-    } else if (tile.data.river) {
-      return;
-    } else if (tile.data.lake) {
-      return;
-    } else if (tile.data.forest) {
-      if (r < 0.01) {
-        tile.data.collectible.tile = C.Map.Foliage.Mushrooms;
-      } else if (r < 0.02) {
-        tile.data.collectible.tile = C.Map.Foliage.Mushroom;
-      }
-    } else {
-      if (r < 0.005) {
-        tile.data.collectible.tile = C.Map.Foliage.Mushrooms;
-      } else if (r < 0.01) {
-        tile.data.collectible.tile = C.Map.Foliage.Mushroom;
-      }
+
+    const mushroomChance = this._computeMushroomChance(tile)
+    if (r < mushroomChance) {
+      const mushroom = this._spawnMushroom(tile);
+      tile.data.collectible.mushroom = mushroom;
+      spawned = true;
     }
 
     tile.data.collectible.modified = time;
+    return spawned;
+  }
+
+  _computeMushroomChance(tile) {
+    if (tile.data.edge || tile.data.river || tile.data.lake) {
+      return 0;
+    } else if (tile.data.forest) {
+      return 0.02;
+    }
+    return 0.01;
+  }
+
+  _spawnMushroom(tile) {
+    const odds = [];
+
+    const mushrooms = Object.entries(M);
+    const denominator = mushrooms.reduce((d, [name, data]) => {
+      if (data.rarity <= 10) {
+        return d + (2 ** data.rarity);
+      }
+    }, 0);
+
+    mushrooms.reduce((sum, [name, data], index) => {
+      const chance = (2 ** data.rarity) / denominator;
+      const threshold = sum + chance;
+      odds[index] = {
+        data,
+        threshold,
+      };
+      return threshold;
+    }, 0);
+
+    const r = Math.random();
+    const { data: mushroom } = odds.find(({ data, threshold }) => {
+      return r < threshold;
+    });
+
+    return mushroom;
   }
 
   _buildGroundLayer() {
@@ -533,7 +579,8 @@ export default class Map {
     this._forEachTile((tile, x, y) => {
       if (this._isValidTileCoords(x, y)) {
         const tileBelow = this._isValidTileCoords(x, y + 1) ? this._getTileAt(x, y + 1) : null;
-        const key = this._getObjectImage(tile, tileBelow);
+        const key = tile.data.foliage.image;
+        // this._getObjectImage(tile, tileBelow);
         this.objectLayer.putTileAt(key ? 18 : -1, x, y);
 
         if (key) {
@@ -541,7 +588,7 @@ export default class Map {
           const imageY = y * this.tilesize;
           const image = this.scene.add.image(imageX, imageY, "foliage_atlas", key);
           image.depth = image.y + (image.height / 2);
-          this.scene.foliage.add(image);
+          this.scene.foliageGroup.add(image);
           tile.image = image;
           image.setVisible(false);
         }
@@ -557,29 +604,36 @@ export default class Map {
   }
 
   _buildCollectibleLayer() {
-    // this.collectibleLayer = this.tilemap.createBlankDynamicLayer("collectible", this.tilesets.foliage);
-    // this.collectibleLayer.setCollision([3, 23]);
-    // // this.collectibleLayer.depth = 101;
-    //
-    // this._updateCollectibleLayer(null, null);
+    this.collectibleLayer = this.tilemap.createBlankDynamicLayer("collectible", this.tilesets.foliage);
+    this.collectibleLayer.setCollision([18]);
+    this._updateCollectibleLayer(null, null);
   }
 
-  _updateCollectibleLayer(time, delta) {
-    // let elapsedTime;
-    // if (this.collectiblesModified) {
-    //   elapsedTime = time - this.collectiblesModified;
-    // };
-    //
-    // // Check once every 10 frames
-    // if (elapsedTime > 10 * (1 / 60)) {
-    //   this.visibleObjectTiles.forEach((tile) => {
-    //     const virtualTile = this._getTileAt(tile.x, tile.y);
-    //     this._spawnCollectible(virtualTile, time, delta);
-    //     this.collectibleLayer.putTileAt(this._getCollectibleTile(virtualTile), virtualTile.x, virtualTile.y);
-    //   });
-    // }
-    //
-    // this.collectiblesModified = time;
+  _updateCollectibleLayer(time) {
+    let elapsedTime;
+    if (this.collectiblesModifiedTime) {
+      elapsedTime = time - this.collectiblesModifiedTime;
+    };
+
+    // Check once every 10 frames
+    if (elapsedTime > 10 * (1 / 60)) {
+      this.visibleObjectTiles.forEach((tile) => {
+        const virtualTile = this._getTileAt(tile.x, tile.y);
+        const spawned = this._spawnCollectible(virtualTile, time);
+        const key = virtualTile.data.collectible.mushroom.image;
+        if (spawned && key) {
+          const imageX = virtualTile.x * this.tilesize + this.tilesize / 2;
+          const imageY = virtualTile.y * this.tilesize;
+          const image = this.scene.add.image(imageX, imageY, "foliage_atlas", key);
+          image.depth = image.y + (image.height / 2);
+          this.scene.collectiblesGroup.add(image);
+          virtualTile.image = image;
+          image.setVisible(true);
+          this.collectibleLayer.putTileAt(18, virtualTile.x, virtualTile.y);
+        }
+      });
+    }
+    this.collectiblesModifiedTime = time;
   };
 
   _buildFogLayer() {
@@ -601,52 +655,17 @@ export default class Map {
     return this.tilesheets.terrain[C.Map.Terrain.Grass];
   };
 
-  _getObjectImage(tile, tileBelow) {
-    let image;
-    if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.L1) {
-      image = "tree_pine_L1";
-    } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M2) {
-      image = "tree_pine_M2";
-    } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M1) {
-      image = "tree_pine_M1";
-    }
-    return image
-    // let index = -1;
-    // if (tileBelow) {
-    //   if (tileBelow.data.foliage.tile === C.Map.Foliage.Tree.Pine.L1) {
-    //     index = 33;
-    //   } else if (tileBelow.data.foliage.tile === C.Map.Foliage.Tree.Pine.M2) {
-    //     index = 73;
-    //   } else if (tileBelow.data.foliage.tile === C.Map.Foliage.Tree.Pine.M1) {
-    //     index = 113;
-    //   }
-    // }
-    // if (index > 0) {
-    //   if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.L1) {
-    //     index += 1;
-    //   } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M2) {
-    //     index += 2;
-    //   } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M1) {
-    //     index += 3;
-    //   }
-    //   return index;
-    // }
-    //
-    // if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.L1) {
-    //   index = 53;
-    // } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M2) {
-    //   index = 93;
-    // } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M1) {
-    //   index = 133;
-    // } else if (tile.data.foliage.tile === C.Map.Foliage.Bush) {
-    //   index = -1;
-    // } else if (tile.data.foliage.tile === C.Map.Foliage.Rock) {
-    //   index = -1;
-    // } else if (tile.data.foliage.tile === C.Map.Foliage.Stump) {
-    //   index = -1;
-    // }
-    // return index;
-  };
+  // _getObjectImage(tile, tileBelow) {
+  //   let image;
+  //   if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.L1) {
+  //     image = "tree_pine_L1";
+  //   } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M2) {
+  //     image = "tree_pine_M2";
+  //   } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M1) {
+  //     image = "tree_pine_M1";
+  //   }
+  //   return image
+  // };
 
   _getCollectibleTile(tile) {
     if (tile.data.collectible.tile === C.Map.Foliage.Mushroom) {
@@ -737,7 +756,9 @@ class MapTile {
 
     this.data = {
       foliage: {},
-      collectible: {},
+      collectible: {
+        mushroom: {},
+      },
     };
 
     this.x = x;
@@ -753,16 +774,22 @@ class MapQuadrant {
     this.map = map;
     this.x = x;
     this.y = y;
+    this.size = 4;
 
     this.init();
   }
 
   init() {
     // Get random quandrant layout
-    this.shapes = MapQuadrantData[0].shapes
+    const shapeIndex = randomInt(MapQuadrantData.length - 1);
+    this.shapes = MapQuadrantData[shapeIndex].shapes
 
     // Initialize chunk grid (4x4)
-    this.chunks = [[...Array(4)], [...Array(4)], [...Array(4)], [...Array(4)]];
+    this.chunks = [...Array(this.size)].map((row) => {
+      return [...Array(this.size)];
+    });
+
+    this.rotations = randomInt(0, 3);
 
     // Add each shape to chunk grid
     this.shapes.forEach((shape) => {
@@ -770,7 +797,7 @@ class MapQuadrant {
       const variants = MapShapeData[shape.key].variants;
       const variant = variants[randomInt(variants.length - 1)];
 
-      this._addShapeToGrid(shape, variant);
+      this._addShapeToGrid(shape, variant, this.rotations);
     });
 
     this._apply();
@@ -825,7 +852,7 @@ class MapQuadrant {
     });
   };
 
-  _addShapeToGrid(shape, variant) {
+  _addShapeToGrid(shape, variant, quadrantRotations) {
     const { key, origin, rotations: shapeRotations, mirrored } = shape;
     const { chunks, rotations: variantRotations} = variant
     const { coordinates } = MapShapeData[key];
@@ -847,7 +874,7 @@ class MapQuadrant {
       }, transformed);
 
       // Translate based on location of origin
-      const translated = {
+      transformed = {
         x: transformed.x + origin.x,
         y: transformed.y + origin.y,
       };
@@ -864,14 +891,21 @@ class MapQuadrant {
         });
       }
 
+      // Rotate chunks around quadrant center if necessary
+      transformed = [...Array(quadrantRotations)].reduce((t) => {
+        const rotatedY = t.x;
+        const rotatedX = this.size - t.y - 1;
+        return { x: rotatedX, y: rotatedY };
+      }, transformed);
+
       // Rotate around chunk center if necessary
-      const tileRotations = (shapeRotations + variantRotations) % 4;
+      const tileRotations = (quadrantRotations + shapeRotations + variantRotations) % 4;
       tiles = [...Array(tileRotations)].reduce((t) => {
         return rotateGrid(tiles);
       }, tiles);
 
       // Assign computed chunk tiles to chunk grid
-      this.chunks[translated.y][translated.x] = {
+      this.chunks[transformed.y][transformed.x] = {
         tiles,
       };
     });

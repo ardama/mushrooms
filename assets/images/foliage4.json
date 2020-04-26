@@ -1,0 +1,137 @@
+{
+  "frames": [
+    {
+      "filename": "tree__pine__L1__A",
+      "frame": {"x":32,"y":0,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+    },
+    {
+      "filename": "tree__pine__L1__B",
+      "frame": {"x":64,"y":0,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+
+    },
+    {
+      "filename": "tree__pine__M2__A",
+      "frame": {"x":96,"y":0,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+    },
+    {
+      "filename": "tree__pine__M2__B",
+      "frame": {"x":128,"y":0,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+    },
+    {
+      "filename": "tree__pine__L1M1__A",
+      "frame": {"x":160,"y":0,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+    },
+    {
+      "filename": "tree__pine__M3__A",
+      "frame": {"x":192,"y":0,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+    },
+    {
+      "filename": "mushroom__red__2__A",
+      "frame": {"x":128,"y":128,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+    },
+    {
+      "filename": "mushroom__red__2__B",
+      "frame": {"x":64,"y":160,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+    },
+    {
+      "filename": "mushroom__red__3__A",
+      "frame": {"x":224,"y":160,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+    },
+    {
+      "filename": "mushroom__orange__3__A",
+      "frame": {"x":192,"y":160,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+    },
+    {
+      "filename": "mushroom__orange__4__A",
+      "frame": {"x":96,"y":128,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+    },
+    {
+      "filename": "mushroom__yellow__3__A",
+      "frame": {"x":0,"y":128,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+    },
+    {
+      "filename": "mushroom__yellow__3__B",
+      "frame": {"x":96,"y":160,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+    },
+    {
+      "filename": "mushroom__green__1__A",
+      "frame": {"x":192,"y":128,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+    },
+    {
+      "filename": "mushroom__green__2__A",
+      "frame": {"x":128,"y":160,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+    },
+    {
+      "filename": "mushroom__green__3__A",
+      "frame": {"x":32,"y":128,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+    },
+    {
+      "filename": "mushroom__blue__2__A",
+      "frame": {"x":64,"y":128,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+    },
+    {
+      "filename": "mushroom__blue__2__B",
+      "frame": {"x":160,"y":160,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+    },
+    {
+      "filename": "mushroom__indigo__2__A",
+      "frame": {"x":0,"y":160,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+    },
+    {
+      "filename": "mushroom__indigo__3__A",
+      "frame": {"x":32,"y":160,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+    },
+    {
+      "filename": "mushroom__indigo__4__A",
+      "frame": {"x":224,"y":128,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+    },
+    {
+      "filename": "mushroom__violet__2__A",
+      "frame": {"x":160,"y":128,"w":32,"h":64},
+      "rotated": false,
+      "trimmed": false
+    }
+  ]
+}
