@@ -4,6 +4,9 @@ import M from '../data/MushroomData.js';
 import MapQuadrantData from '../data/MapQuadrants.js';
 import MapShapeData from '../data/MapShapes.js';
 import MapChunkData from '../data/MapChunks.js';
+import Modifier from './Modifier.js';
+import Mushroom from './Mushroom.js';
+import Prop from './Prop.js';
 
 export default class Map {
   constructor(scene) {
@@ -43,13 +46,12 @@ export default class Map {
       },
     }
 
-    this.visibleObjectTiles = [];
+    this.visibleTiles = [];
     this.visibleFogTiles = [];
 
     this._generateMapData();
     this._buildGroundLayer();
     this._buildObjectLayer();
-    this._buildCollectibleLayer();
     this._buildFogLayer();
 
     this.width = this.columns * this.tilesize;
@@ -235,15 +237,15 @@ export default class Map {
     for (let x = 0; x < this.columns; x++) {
       for (let y = 0; y < topWidth; y++) {
         const tile = this._getTileAt(x, y);
-        tile.data.edge = true;
-        tile.data.forest = true;
+        tile.setEdge(true);
+        tile.setTerrain('forest');
       }
       topWidth = bounded(topWidth + randomInt(-1, 1), minWidth, maxWidth);
 
       for (let y = 0; y < bottomWidth; y++) {
         const tile = this._getTileAt(x, this.rows - 1 - y);
-        tile.data.edge = true;
-        tile.data.forest = true;
+        tile.setEdge(true);
+        tile.setTerrain('forest');
       }
       bottomWidth = bounded(bottomWidth + randomInt(-1, 1), minWidth, maxWidth);
     }
@@ -253,15 +255,15 @@ export default class Map {
     for (let y = 0; y < this.rows; y++) {
       for (let x = 0; x < leftWidth; x++) {
         const tile = this._getTileAt(x, y);
-        tile.data.edge = true;
-        tile.data.forest = true;
+        tile.setEdge(true);
+        tile.setTerrain('forest');
       }
       leftWidth = bounded(leftWidth + randomInt(-1, 1), minWidth, maxWidth);
 
       for (let x = 0; x < rightWidth; x++) {
         const tile = this._getTileAt(this.columns - 1 - x, y);
-        tile.data.edge = true;
-        tile.data.forest = true;
+        tile.setEdge(true);
+        tile.setTerrain('forest');
       }
       rightWidth = bounded(rightWidth + randomInt(-1, 1), minWidth, maxWidth);
     }
@@ -443,92 +445,89 @@ export default class Map {
     this._forEachTile((tile, x, y) => {
       const r = Math.random();
 
-      if (tile.data.edge) {
+      if (tile.state.edge) {
         if (r < 0.2) {
-          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.L1_A;
+          tile.state.foliage.image = C.Map.Foliage.Tree.Pine.L1_A;
         } else if (r < 0.6) {
-          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.L1_B;
+          tile.state.foliage.image = C.Map.Foliage.Tree.Pine.L1_B;
         } else if (r < 0.7) {
-          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.L1M1_A;
+          tile.state.foliage.image = C.Map.Foliage.Tree.Pine.L1M1_A;
         } else if (r < 0.8) {
-          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.M2_A;
+          tile.state.foliage.image = C.Map.Foliage.Tree.Pine.M2_A;
         } else if (r < 0.9) {
-          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.M2_B;
+          tile.state.foliage.image = C.Map.Foliage.Tree.Pine.M2_B;
         } else {
-          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.M3_A;
+          tile.state.foliage.image = C.Map.Foliage.Tree.Pine.M3_A;
         }
-      } else if (tile.data.river) {
+      } else if (tile.state.terrain === 'river') {
         return;
-      } else if (tile.data.lake) {
+      } else if (tile.state.terrain === 'lake') {
         return;
-      } else if (tile.data.forest) {
+      } else if (tile.state.terrain === 'forest') {
         if (r < 0.02) {
-          // tile.data.foliage.image = C.Map.Foliage.Bush;
+          // tile.state.foliage.image = C.Map.Foliage.Bush;
         } else if (r < 0.04) {
-          // tile.data.foliage.image = C.Map.Foliage.Rock;
+          // tile.state.foliage.image = C.Map.Foliage.Rock;
         } else if (r < 0.06) {
-          // tile.data.foliage.image = C.Map.Foliage.Stump;
+          // tile.state.foliage.image = C.Map.Foliage.Stump;
         } else if (r < 0.10) {
-          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.L1_A;
+          tile.state.foliage.image = C.Map.Foliage.Tree.Pine.L1_A;
         } else if (r < 0.18) {
-          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.L1_B;
+          tile.state.foliage.image = C.Map.Foliage.Tree.Pine.L1_B;
         } else if (r < 0.20) {
-          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.L1M1_A;
+          tile.state.foliage.image = C.Map.Foliage.Tree.Pine.L1M1_A;
         } else if (r < 0.22) {
-          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.M2_A;
+          tile.state.foliage.image = C.Map.Foliage.Tree.Pine.M2_A;
         } else if (r < 0.24) {
-          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.M2_B;
+          tile.state.foliage.image = C.Map.Foliage.Tree.Pine.M2_B;
         } else if (r < 0.26) {
-          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.M3_A;
+          tile.state.foliage.image = C.Map.Foliage.Tree.Pine.M3_A;
         }
       } else {
         if (r < 0.005) {
-          // tile.data.foliage.image = C.Map.Foliage.Bush;
+          // tile.state.foliage.image = C.Map.Foliage.Bush;
         } else if (r < 0.01) {
-          // tile.data.foliage.image = C.Map.Foliage.Rock;
+          // tile.state.foliage.image = C.Map.Foliage.Rock;
         } else if (r < 0.012) {
-          // tile.data.foliage.image = C.Map.Foliage.Stump;
+          // tile.state.foliage.image = C.Map.Foliage.Stump;
         } else if (r < 0.018) {
-          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.L1_A;
+          tile.state.foliage.image = C.Map.Foliage.Tree.Pine.L1_A;
         } else if (r < 0.028) {
-          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.L1_B;
+          tile.state.foliage.image = C.Map.Foliage.Tree.Pine.L1_B;
         } else if (r < 0.031) {
-          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.L1M1_A;
+          tile.state.foliage.image = C.Map.Foliage.Tree.Pine.L1M1_A;
         } else if (r < 0.034) {
-          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.M2_A;
+          tile.state.foliage.image = C.Map.Foliage.Tree.Pine.M2_A;
         } else if (r < 0.037) {
-          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.M2_B;
+          tile.state.foliage.image = C.Map.Foliage.Tree.Pine.M2_B;
         } else if (r < 0.040) {
-          tile.data.foliage.image = C.Map.Foliage.Tree.Pine.M3_A;
+          tile.state.foliage.image = C.Map.Foliage.Tree.Pine.M3_A;
         }
       }
     });
   }
 
   _spawnCollectible(tile, time, delta) {
+    if (Object.keys(tile.state.gameObjects).length) {
+      return null;
+    }
+
     let spawned = false;
-    const timeElapsed = tile.data.collectible.modified ? time - tile.data.collectible.modified : (60 * 1000);
-    const timeFactor = timeElapsed / (60 * 1000);
+    const timeElapsed = tile.state.collectible.modified ? time - tile.state.collectible.modified : (60 * 1000);
+    const timeFactor = timeElapsed / (20 * 1000);
     const r = Math.random() / timeFactor;
 
     const mushroomChance = this._computeMushroomChance(tile)
     if (r < mushroomChance) {
-      const mushroom = this._spawnMushroom(tile);
-      tile.data.collectible.mushroom = mushroom;
-      spawned = true;
+      return this._spawnMushroom(tile);
     }
 
-    tile.data.collectible.modified = time;
-    return spawned;
+    tile.state.collectible.modified = time;
+    return null;
   }
 
   _computeMushroomChance(tile) {
-    if (tile.data.edge || tile.data.river || tile.data.lake) {
-      return 0;
-    } else if (tile.data.forest) {
-      return 0.02;
-    }
-    return 0.01;
+    return tile.stats.mushroomSpawnRate;
   }
 
   _spawnMushroom(tile) {
@@ -545,14 +544,14 @@ export default class Map {
       const chance = (2 ** data.rarity) / denominator;
       const threshold = sum + chance;
       odds[index] = {
-        data,
+        name,
         threshold,
       };
       return threshold;
     }, 0);
 
     const r = Math.random();
-    const { data: mushroom } = odds.find(({ data, threshold }) => {
+    const { name: mushroom } = odds.find(({ name, threshold }) => {
       return r < threshold;
     });
 
@@ -573,40 +572,28 @@ export default class Map {
 
   _buildObjectLayer() {
     this.objectLayer = this.tilemap.createBlankDynamicLayer("object", this.tilesets.foliage);
-    // this.objectLayer.setCollision([53, 93, 133, 34, 74, 114, 35, 75, 115, 36, 76, 116]);
     this.objectLayer.setCollision([18]);
 
     this._forEachTile((tile, x, y) => {
       if (this._isValidTileCoords(x, y)) {
         const tileBelow = this._isValidTileCoords(x, y + 1) ? this._getTileAt(x, y + 1) : null;
-        const key = tile.data.foliage.image;
-        // this._getObjectImage(tile, tileBelow);
-        this.objectLayer.putTileAt(key ? 18 : -1, x, y);
+        const key = tile.state.foliage.image;
 
         if (key) {
-          const imageX = x * this.tilesize + this.tilesize / 2;
-          const imageY = y * this.tilesize;
-          const image = this.scene.add.image(imageX, imageY, "foliage_atlas", key);
-          image.depth = image.y + (image.height / 2);
-          this.scene.foliageGroup.add(image);
-          tile.image = image;
-          image.setVisible(false);
+          const propX = x * this.tilesize + this.tilesize / 2;
+          const propY = y * this.tilesize;
+          const prop = new Prop(this.scene, propX, propY, key);
+          prop.setVisible(false);
+
+          tile.state.gameObjects[prop.id] = prop;
+          this.objectLayer.putTileAt(18, x, y);
         }
       }
     });
-
-    this._forEachTile((tile, x, y) => {
-    })
   };
 
   _updateObjectLayer() {
 
-  }
-
-  _buildCollectibleLayer() {
-    this.collectibleLayer = this.tilemap.createBlankDynamicLayer("collectible", this.tilesets.foliage);
-    this.collectibleLayer.setCollision([18]);
-    this._updateCollectibleLayer(null, null);
   }
 
   _updateCollectibleLayer(time) {
@@ -617,19 +604,41 @@ export default class Map {
 
     // Check once every 10 frames
     if (elapsedTime > 10 * (1 / 60)) {
-      this.visibleObjectTiles.forEach((tile) => {
+      this.visibleTiles.forEach((tile) => {
         const virtualTile = this._getTileAt(tile.x, tile.y);
-        const spawned = this._spawnCollectible(virtualTile, time);
-        const key = virtualTile.data.collectible.mushroom.image;
-        if (spawned && key) {
-          const imageX = virtualTile.x * this.tilesize + this.tilesize / 2;
-          const imageY = virtualTile.y * this.tilesize;
-          const image = this.scene.add.image(imageX, imageY, "foliage_atlas", key);
-          image.depth = image.y + (image.height / 2);
-          this.scene.collectiblesGroup.add(image);
-          virtualTile.image = image;
-          image.setVisible(true);
-          this.collectibleLayer.putTileAt(18, virtualTile.x, virtualTile.y);
+        const key = this._spawnCollectible(virtualTile, time);
+        if (key) {
+          const origin = this._toWorldCoords(virtualTile.x, virtualTile.y);
+          const mushroom = new Mushroom(this.scene, origin.x, origin.y, key);
+          virtualTile.state.gameObjects[mushroom.id] = mushroom;
+          this.objectLayer.putTileAt(18, virtualTile.x, virtualTile.y);
+
+          const center = mushroom.getCenter();
+          const nearbyTiles = this.objectLayer.getTilesWithinShape(new Phaser.Geom.Circle(center.x, center.y, 400));
+
+          const nearbySpawnModifier = new Modifier(
+            this.scene,
+            C.Modifiers.Type.MapTile.NearbySpawn,
+            mushroom,
+            {
+              multiplier: (x, y) => {
+                const d = Phaser.Math.Distance.Between(x, y, origin.x, origin.y);
+                const f = (d / 400) ** 2;
+                return bounded(0.04 + (0.96 * f), 0.04, 1);
+              }
+            },
+          );
+          nearbyTiles.forEach((t) => {
+            const vt = this._getTileAt(t.x, t.y);
+            vt.addModifier(nearbySpawnModifier);
+          });
+
+          // const nearbyFarModifier = new Modifier(C.Modifiers.Type.MapTile.NearbySpawnFar, mushroom);
+          // nearbyTilesFar.forEach((t) => {
+          //   const vt = this._getTileAt(t.x, t.y)
+          //   vt.addModifier(nearbyFarModifier);
+          // });
+
         }
       });
     }
@@ -648,10 +657,10 @@ export default class Map {
   };
 
   _getTerrainTile(tile) {
-    if (tile.data.edge) return this.tilesheets.terrain[C.Map.Terrain.Dirt];
-    if (tile.data.lake) return this.tilesheets.terrain[C.Map.Terrain.Water];
-    if (tile.data.river) return this.tilesheets.terrain[C.Map.Terrain.Rock];
-    if (tile.data.forest) return this.tilesheets.terrain[C.Map.Terrain.Dirt];
+    if (tile.state.edge) return this.tilesheets.terrain[C.Map.Terrain.Dirt];
+    if (tile.state.terrain === 'lake') return this.tilesheets.terrain[C.Map.Terrain.Water];
+    if (tile.state.terrain === 'river') return this.tilesheets.terrain[C.Map.Terrain.Rock];
+    if (tile.state.terrain === 'forest') return this.tilesheets.terrain[C.Map.Terrain.Dirt];
     return this.tilesheets.terrain[C.Map.Terrain.Grass];
   };
 
@@ -668,9 +677,9 @@ export default class Map {
   // };
 
   _getCollectibleTile(tile) {
-    if (tile.data.collectible.tile === C.Map.Foliage.Mushroom) {
+    if (tile.state.collectible.tile === C.Map.Foliage.Mushroom) {
       return -1;
-    } else if (tile.data.collectible.tile === C.Map.Foliage.Mushrooms) {
+    } else if (tile.state.collectible.tile === C.Map.Foliage.Mushrooms) {
       return -1;
     }
     return -1;
@@ -688,6 +697,36 @@ export default class Map {
     return this.tiles[y][x];
   }
 
+  _getTileAtWorldCoords(x, y) {
+    const { x: tx, y: ty} = this._toTileCoords(x, y);
+    if (this._isValidTileCoords(tx, ty)) {
+      return this._getTileAt(tx, ty);
+    }
+    return null;
+  }
+
+  _getAdjacentTile(tile, direction) {
+    let x = tile.x;
+    let y = tile.y;
+    switch(direction) {
+      case C.Directions.Up:
+        y -= 1;
+        break;
+      case C.Directions.Down:
+        y += 1;
+        break;
+      case C.Directions.Left:
+        x -= 1;
+        break;
+      case C.Directions.Right:
+        x += 1;
+        break;
+      default:
+        break;
+    }
+    return this._isValidTileCoords(x, y) ? this._getTileAt(x, y) : null;
+  }
+
   _toWorldCoords(x, y) {
     const half = this.tilesize / 2;
     return { x: half + x * this.tilesize, y: half + y * this.tilesize };
@@ -701,51 +740,43 @@ export default class Map {
     return x >= 0 && x < this.columns && y >= 0 && y < this.rows;
   }
 
-  revealTiles(visibleObjectTiles, visibleFogTilesOuter, visibleFogTilesInner) {
+  revealTiles(visibleTilesOuter, visibleTilesInner) {
     // Create set for easier tile lookup
-    const objectTileSet = new Set();
-    visibleObjectTiles.forEach((tile) => {
-      objectTileSet.add(pointToString(tile));
+    const visibleOuterSet = new Set();
+    visibleTilesOuter.forEach((tile) => {
+      visibleOuterSet.add(pointToString(tile));
     });
 
     // Hide old visible tiles
-    if (this.visibleObjectTiles) {
-      this.visibleObjectTiles.forEach((tile) => {
-        const tileData = this._getTileAt(tile.x, tile.y);
-        if (tileData.image && !objectTileSet.has(pointToString(tile))) {
-          tileData.image.setVisible(false);
+    if (this.visibleTiles) {
+      this.visibleTiles.forEach((tile) => {
+        if (!visibleOuterSet.has(pointToString(tile))) {
+          const tileData = this._getTileAt(tile.x, tile.y);
+          Object.values(tileData.state.gameObjects).forEach((obj) => {
+            if (obj.class == C.Classes.Mushroom) {
+              obj.setVisible(false);
+            }
+          });
+
+          tile.setAlpha(0.7);
         }
       });
     }
 
     // Reveal new visible tiles
-    visibleObjectTiles.forEach((tile) => {
+    visibleTilesOuter.forEach((tile) => {
       const tileData = this._getTileAt(tile.x, tile.y);
-      if (tileData.image) {
-        tileData.image.setVisible(true);
-      }
-    });
-
-    // Update cached visible tiles
-    this.visibleObjectTiles = visibleObjectTiles;
-
-    // Reset old fog tiles
-    if (this.visibleFogTiles) {
-      this.visibleFogTiles.forEach((tile) => {
-        tile.setAlpha(0.7);
+      Object.values(tileData.state.gameObjects).forEach((obj) => {
+        obj.setVisible(true);
       });
-    }
-
-    // Reveal new fog tiles
-    visibleFogTilesOuter.forEach((tile) => {
       tile.setAlpha(.2);
     });
-    visibleFogTilesInner.forEach((tile) => {
+    visibleTilesInner.forEach((tile) => {
       tile.setAlpha(0);
     });
 
-    // Update cached fog tiles
-    this.visibleFogTiles = visibleFogTilesOuter;
+    // Update cached visible tiles
+    this.visibleTiles = visibleTilesOuter;
   }
 };
 
@@ -754,18 +785,92 @@ class MapTile {
     this.map = map;
     this.scene = map.scene;
 
-    this.data = {
+    this.state = {
+      gameObjects: {},
       foliage: {},
       collectible: {
-        mushroom: {},
+        mushroom: {
+        },
       },
+      modifiers: {}
     };
+
+    this.basestats = {
+      mushroomSpawnRate: 0.01,
+    };
+
+    this.stats = {};
+
 
     this.x = x;
     this.y = y;
 
+    const worldCoords = this.map._toWorldCoords(x, y);
+    this.worldX = worldCoords.x;
+    this.worldY = worldCoords.y;
+
+
     this.groundLayerTileIndex = 3;
     this.objectLayerTileIndex = -1;
+
+    this.computeStats();
+  }
+
+  setEdge(v) {
+    this.state.edge = v;
+    this.computeStats();
+  };
+
+  setTerrain(terrain) {
+    this.state.terrain = terrain;
+    this.computeStats();
+  }
+
+  addModifier(modifier) {
+    this.state.modifiers[modifier.id] = modifier;
+    this.computeStats(true);
+  }
+
+  computeStats() {
+    const stats = Object.assign({}, this.basestats);
+    if (this.state.edge || this.state.terrain === 'river' || this.state.terrain === 'lake') {
+      stats.mushroomSpawnRate = 0;
+    } else if (this.state.terrain === 'forest') {
+      stats.mushroomSpawnRate *= 3;
+    }
+
+    const entries = Object.entries(this.state.modifiers);
+    entries.forEach(([_, modifier]) => {
+      const { type, data, active } = modifier;
+      if (!active) { return; }
+
+      switch(type) {
+        case C.Modifiers.Type.MapTile.NearbySpawn: {
+          const { multiplier } = data;
+          stats.mushroomSpawnRate *= multiplier(this.worldX, this.worldY);
+          break;
+        }
+        default: {}
+      }
+    });
+    this.stats = stats;
+  }
+
+  getMushroom() {
+    return Object.values(this.state.gameObjects).find((obj) => obj.class && obj.class === C.Classes.Mushroom);
+  }
+
+  removeGameObject(obj) {
+    obj.setVisible(false);
+    delete this.state.gameObjects[obj.id];
+
+    Object.values(obj.ownedModifiers).forEach((modifier) => {
+      modifier.active = false;
+    });
+
+    if (Object.keys(this.state.gameObjects).length === 0) {
+      this.map.objectLayer.putTileAt(-1, this.x, this.y);
+    }
   }
 };
 
@@ -823,7 +928,7 @@ class MapQuadrant {
                 break;
               }
               case 1: {
-                mapTile.data.lake = true;
+                mapTile.setTerrain('lake');
                 break;
               }
               case 2: {
@@ -836,7 +941,7 @@ class MapQuadrant {
                 break;
               }
               case 5: {
-                mapTile.data.forest = true;
+                mapTile.setTerrain('forest');
                 break;
               }
               case 6: {

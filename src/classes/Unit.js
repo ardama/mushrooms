@@ -68,7 +68,7 @@ export default class Unit extends Phaser.GameObjects.Sprite {
     );
   };
 
-  updateHealthbar(x, y) {
+  updateHealthbar(x, y, fill) {
     let coords = { x, y };
     if (x === undefined && y === undefined) {
       coords = this.getHealthbarCoordinates();
@@ -78,6 +78,7 @@ export default class Unit extends Phaser.GameObjects.Sprite {
     this.healthbar.y = coords.y;
     this.healthbarFill.x = coords.x;
     this.healthbarFill.y = coords.y;
+    this.healthbarFill.width = 30 * fill;
     // this.healthbarFill.width = 30 * (1 - this.state.missinghealth / this.stats.maxhealth);
   }
 

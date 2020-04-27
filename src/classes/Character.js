@@ -5,7 +5,7 @@ import Unit from './Unit.js';
 const typeData = {
   type: 'character',
   targetTypes: ['enemy'],
-  healthbarColor: 0x0044bb,
+  healthbarColor: 0x00bb44,
 };
 
 export default class Character extends Unit {
@@ -36,7 +36,20 @@ export default class Character extends Unit {
       right: false,
     };
 
+    this.state.visionCycle = 0;
+
     this.state.destination = null;
+
+    this.state.previousPositions = [...Array(10)];
+
+    this.state.digging = {
+      active: false,
+      timer: 0,
+      target: null,
+      tile: null,
+    };
+
+    this.state.inventory = {};
   }
 
   update(time, delta) {
@@ -68,12 +81,19 @@ export default class Character extends Unit {
 
     const { destination } = this.state;
     if (destination) {
-      this.scene.physics.moveTo(this, destination.x, destination.y, 120);
+      this.scene.physics.moveTo(this, destination.x, destination.y, 99);
 
       // Compute destination arrival
       const { velocity, center } = this.body;
-      const arrivedHorizontal = (velocity.x > 0 && center.x >= destination.x) || (velocity.x < 0 && center.x <= destination.x);
-      const arrivedVertical = (velocity.y > 0 && center.y >= destination.y) || (velocity.y < 0 && center.y <= destination.y);
+      let arrivedHorizontal = (velocity.x > 0 && center.x >= destination.x) || (velocity.x < 0 && center.x <= destination.x);
+      let arrivedVertical = (velocity.y > 0 && center.y >= destination.y) || (velocity.y < 0 && center.y <= destination.y);
+
+      const oldPosition = this.state.previousPositions.shift()
+      this.state.previousPositions.push({ x: center.x, y: center.y });
+      if (oldPosition && Math.abs(oldPosition.x - center.x) < 1 && Math.abs(oldPosition.y - center.y) < 1) {
+        arrivedVertical = true;
+        arrivedHorizontal = true;
+      }
 
       if (arrivedHorizontal && arrivedVertical) {
         this.halt();
@@ -81,12 +101,16 @@ export default class Character extends Unit {
       } else {
         const vertical = Math.abs(velocity.y) > 1.5 * Math.abs(velocity.x);
         if (vertical && velocity.y < 0) {
+          this.direction = C.Directions.Up;
           this.triggerAnimation('teemo-base-walk-up', -1);
         } else if (vertical && velocity.y > 0) {
+          this.direction = C.Directions.Down;
           this.triggerAnimation('teemo-base-walk-down', -1);
         } else if (velocity.x < 0) {
+          this.direction = C.Directions.Left;
           this.triggerAnimation('teemo-base-walk-left', -1);
         } else if (velocity.x > 0) {
+          this.direction = C.Directions.Right;
           this.triggerAnimation('teemo-base-walk-right', -1);
         }
       }
@@ -97,8 +121,8 @@ export default class Character extends Unit {
       let directionX = (moving.left ? -1 : 0) + (moving.right ? 1 : 0);
       let directionY = (moving.up ? -1 : 0) + (moving.down ? 1 : 0);
 
-      let velocityX = directionX * 120;
-      let velocityY = directionY * 120;
+      let velocityX = directionX * 99;
+      let velocityY = directionY * 99;
       if (directionX !== 0 && directionY !== 0) {
         velocityX /= C.Misc.Root2;
         velocityY /= C.Misc.Root2;
@@ -106,12 +130,16 @@ export default class Character extends Unit {
 
 
       if (velocityX < 0) {
+        this.direction = C.Directions.Up;
         this.triggerAnimation('teemo-base-walk-left', -1);
       } else if (velocityX > 0) {
+        this.direction = C.Directions.Down;
         this.triggerAnimation('teemo-base-walk-right', -1);
       } else if (velocityY < 0) {
+        this.direction = C.Directions.Left;
         this.triggerAnimation('teemo-base-walk-up', -1);
       } else if (velocityY > 0) {
+        this.direction = C.Directions.Right;
         this.triggerAnimation('teemo-base-walk-down', -1);
       } else {
         this.finishAnimation();
@@ -127,16 +155,30 @@ export default class Character extends Unit {
 
     this.depth = Math.ceil(this.body.y + (this.body.height / 2));
 
-    // Update healthbar
-    this.updateHealthbar(this.body.x + 16, this.body.y - 6);
     this.attackRange.x = this.x;
     this.attackRange.y = this.y;
 
     const { center, radius } = this.attackRange.body;
-    const visibleObjectTiles = this.scene.map.objectLayer.getTilesWithinShape(new Phaser.Geom.Circle(center.x, center.y, radius));
-    const visibleFogTilesOuter = this.scene.map.fogLayer.getTilesWithinShape(new Phaser.Geom.Circle(center.x, center.y, radius));
-    const visibleFogTilesInner = this.scene.map.fogLayer.getTilesWithinShape(new Phaser.Geom.Circle(center.x, center.y, (radius * 0.95)));
-    this.scene.map.revealTiles(visibleObjectTiles, visibleFogTilesOuter, visibleFogTilesInner);
+
+    if (this.state.visionCycle === 0) {
+      const visibleTilesOuter = this.scene.map.fogLayer.getTilesWithinShape(new Phaser.Geom.Circle(center.x, center.y, radius));
+      const visibleTilesInner = this.scene.map.fogLayer.getTilesWithinShape(new Phaser.Geom.Circle(center.x, center.y, (radius * 0.95)));
+      this.scene.map.revealTiles(visibleTilesOuter, visibleTilesInner);
+    }
+    this.state.visionCycle += 1;
+    this.state.visionCycle %= 10;
+
+    let fill = 0
+    if (this.state.digging.active) {
+      this.state.digging.timer += delta;
+      fill = Math.min(this.state.digging.timer / 1000, 1);
+      if (this.state.digging.timer > 1000) {
+        this.collectMushroom();
+      }
+    }
+
+    // Update healthbar
+    this.updateHealthbar(this.body.x + 16, this.body.y - 6, fill);
   }
 
   renderToScene() {
@@ -149,6 +191,7 @@ export default class Character extends Unit {
 
     if (value) {
       this.state.destination = null;
+      this.setDigging(false);
     }
   };
 
@@ -156,6 +199,8 @@ export default class Character extends Unit {
     if (point) {
       if (!Phaser.Geom.Rectangle.ContainsPoint(this.body, point)) {
         this.state.destination = point;
+        this.state.previousPositions = [...Array(10)];
+        this.setDigging(false);
       }
 
       this.state.moving = {
@@ -184,5 +229,36 @@ export default class Character extends Unit {
 
     // set duration to 1 to force temporary stop
     this.state.mouseDownDuration = 1;
+  }
+
+  setDigging(value) {
+    if (value === this.state.digging.active) { return; }
+
+    if (value) {
+      const c = this.getCenter();
+      const currentTile = this.scene.map._getTileAtWorldCoords(c.x, c.y);
+      const targetTile = this.scene.map._getAdjacentTile(currentTile, this.direction);
+      const mushroom = targetTile && targetTile.getMushroom();
+      if (!mushroom) {
+        return;
+      }
+      this.state.digging.timer = 0;
+      this.state.digging.target = mushroom;
+      this.state.digging.tile = targetTile;
+      this.halt();
+    } else {
+      this.state.digging.timer = 0;
+      this.state.digging.target = null;
+      this.state.digging.tile = null;
+    }
+    this.state.digging.active = value;
+  }
+
+  collectMushroom() {
+    const { target, tile } = this.state.digging;
+    tile.removeGameObject(target);
+    this.state.inventory[target.id] = target;
+    console.log("harvested a", target.name);
+    this.setDigging(false);
   }
 }

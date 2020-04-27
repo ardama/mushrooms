@@ -87,3 +87,11 @@ export function rotateGrid(grid) {
   }
   return grid;
 }
+
+export class Counter {
+  constructor(start) {
+    this.count = start || 0;
+  };
+
+  next = () => this.count++;
+};

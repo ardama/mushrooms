@@ -4,11 +4,13 @@ import C from '../utils/constants.js';
 import D from '../data/GameData.js';
 import Character from '../classes/Character.js';
 import Map from '../classes/Map.js';
-
+import { Counter } from '../utils/helpers.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor(test) {
     super({ key: 'GameScene' });
+
+    this.counter = new Counter(1);
   }
 
   preload() {
@@ -21,7 +23,7 @@ export default class GameScene extends Phaser.Scene {
 
     this.load.image("terrain", "assets/images/terrain.png");
     this.load.image("terrain-extended", "assets/images/terrain-extended.png");
-    this.load.atlas("foliage_atlas", "assets/images/foliage4.png", "assets/images/foliage4.json");
+    this.load.atlas("foliage_atlas", "assets/images/foliage4.png", "assets/json/foliage4.json");
     this.load.image("foliage", "assets/images/foliage3.png");
     this.load.spritesheet("teemo-base", "assets/images/animations/teemo-base.png", {
       frameWidth: 32,
@@ -67,6 +69,7 @@ export default class GameScene extends Phaser.Scene {
     this.updateMap(time, delta);
     this.updateStructures(time, delta);
     this.updateEnemies(time, delta);
+    this.updateCollectibles(time, delta);
   }
 
   createGroups = () => {
@@ -79,7 +82,7 @@ export default class GameScene extends Phaser.Scene {
     this.enemyRanges = this.add.group();
 
     // Other Groups
-    this.foliageGroup = this.add.group();
+    this.propGroup = this.add.group();
     this.collectiblesGroup = this.add.group();
   };
 
@@ -105,6 +108,14 @@ export default class GameScene extends Phaser.Scene {
       C.Keycodes.LEFT,
       C.Keycodes.RIGHT,
       C.Keycodes.S,
+      C.Keycodes.ONE,
+      C.Keycodes.TWO,
+      C.Keycodes.THREE,
+      C.Keycodes.FOUR,
+      C.Keycodes.SEVEN,
+      C.Keycodes.EIGHT,
+      C.Keycodes.NINE,
+      C.Keycodes.ZERO,
     ];
 
     this.keys = {};
@@ -145,6 +156,18 @@ export default class GameScene extends Phaser.Scene {
     this.keys[C.Keycodes.S].on('down', () => {
       this.character.halt();
     });
+    this.keys[C.Keycodes.ONE].on('down', () => {
+      this.character.setDigging(true);
+    });
+    this.keys[C.Keycodes.ONE].on('up', () => {
+      this.character.setDigging(false);
+    });
+    this.keys[C.Keycodes.SEVEN].on('down', () => {
+      this.character.setDigging(true);
+    });
+    this.keys[C.Keycodes.SEVEN].on('up', () => {
+      this.character.setDigging(false);
+    });
 
 
     this.input.mouse.disableContextMenu();
@@ -169,4 +192,10 @@ export default class GameScene extends Phaser.Scene {
       enemy.update(time, delta);
     }
   };
+
+  updateCollectibles = (time, delta) => {
+    this.collectiblesGroup.getChildren().forEach((collectible) => {
+      collectible.update(time, delta);
+    });
+  }
 }

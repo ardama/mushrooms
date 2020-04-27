@@ -1,5 +1,15 @@
 const Constants = {
   Keycodes: Phaser.Input.Keyboard.KeyCodes,
+  Classes: {
+    Mushroom: 'Mushroom',
+    Prop: 'Prop',
+  },
+  Directions: {
+    Up: 'up',
+    Down: 'down',
+    Left: 'left',
+    Right: 'right',
+  },
   Map: {
     Terrain: {
       Water: 'water',
@@ -40,6 +50,13 @@ const Constants = {
   },
   Misc: {
     Root2: Math.pow(2, 0.5),
+  },
+  Modifiers: {
+    Type: {
+      MapTile: {
+        NearbySpawn: 'NearbySpawn',
+      },
+    }
   },
   Mushrooms: {
     Composted: {
