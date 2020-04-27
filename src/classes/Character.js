@@ -21,6 +21,9 @@ export default class Character extends Unit {
     );
     this.attackRange.owner = this;
 
+    this.hitboxW = 24;
+    this.hitboxH = 16;
+
     this.scene.add.existing(this.attackRange);
     this.scene.physics.add.existing(this.attackRange);
     this.attackRange.body.setCircle(this.los);
@@ -151,7 +154,6 @@ export default class Character extends Unit {
 
     this.scene.physics.collide(this, this.scene.map.groundLayer);
     this.scene.physics.collide(this, this.scene.map.objectLayer);
-    this.scene.physics.collide(this, this.scene.map.collectibleLayer);
 
     this.depth = Math.ceil(this.body.y + (this.body.height / 2));
 
@@ -177,13 +179,21 @@ export default class Character extends Unit {
       }
     }
 
+    const { x: cx, y: cy } = this._getCenter();
     // Update healthbar
-    this.updateHealthbar(this.body.x + 16, this.body.y - 6, fill);
+    this.updateHealthbar(cx, cy - 16, fill);
   }
 
   renderToScene() {
     super.renderToScene();
-    this.body.setSize(24, 16, true);
+    this.body.setSize(this.hitboxW, this.hitboxH, true);
+  }
+
+  _getCenter() {
+    return {
+      x: this.body.x + this.hitboxW / 2,
+      y: this.body.y + this.hitboxH / 2,
+    }
   }
 
   setMoving(direction, value) {
@@ -235,7 +245,7 @@ export default class Character extends Unit {
     if (value === this.state.digging.active) { return; }
 
     if (value) {
-      const c = this.getCenter();
+      const c = this._getCenter();
       const currentTile = this.scene.map._getTileAtWorldCoords(c.x, c.y);
       const targetTile = this.scene.map._getAdjacentTile(currentTile, this.direction);
       const mushroom = targetTile && targetTile.getMushroom();
