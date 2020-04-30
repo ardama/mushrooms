@@ -14,6 +14,8 @@ export default class Mushroom extends Phaser.GameObjects.Sprite {
     this.state = {
       rendered: false,
       destroyed: false,
+
+      discovered: false,
     };
 
     this.ownedModifiers = {};
@@ -35,9 +37,21 @@ export default class Mushroom extends Phaser.GameObjects.Sprite {
 
   renderToScene() {
     this.scene.add.existing(this);
+    this.setVisible(this.state.discovered);
+    this.state.rendered = true;
   }
 
   addOwnedModifier(modifier) {
     this.ownedModifiers[modifier.id] = modifier;
+  }
+
+  setVisible(v) {
+    const visible = v && this.state.discovered;
+    return super.setVisible(visible);
+  }
+
+  setDiscovered(d) {
+    this.state.discovered = d;
+    return d;
   }
 };

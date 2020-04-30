@@ -46,8 +46,9 @@ export default class Map {
       },
     }
 
+    this.revealedTiles = [];
     this.visibleTiles = [];
-    this.visibleFogTiles = [];
+    this.visibleTilesSet = new Set();
 
     this._generateMapData();
     this._buildGroundLayer();
@@ -56,10 +57,22 @@ export default class Map {
 
     this.width = this.columns * this.tilesize;
     this.height = this.rows * this.tilesize;
+
+    this.state = {
+      visibleFrameCounter: 0,
+    };
   }
 
   update(time, delta) {
     this._updateCollectibleLayer(time, delta);
+
+    this.state.visibleFrameCounter += 1;
+    this.state.visibleFrameCounter %= 4;
+    if (this.state.visibleFrameCounter === 0) {
+      const { x, y, width, height } = this.scene.cameras.main.worldView;
+      const visibleTiles = this.objectLayer.getTilesWithinWorldXY(x - 100, y - 100, width + 200, height + 200);
+      this.setVisibleTiles(visibleTiles);
+    }
   }
 
   _generateMapData() {
@@ -604,14 +617,14 @@ export default class Map {
 
     // Check once every 10 frames
     if (elapsedTime > 10 * (1 / 60)) {
-      this.visibleTiles.forEach((tile) => {
-        const virtualTile = this._getTileAt(tile.x, tile.y);
-        const key = this._spawnCollectible(virtualTile, time);
+      this._forEachTile((tile, x, y) => {
+        // if (Math.random() > .1) return;
+        const key = this._spawnCollectible(tile, time);
         if (key) {
-          const origin = this._toWorldCoords(virtualTile.x, virtualTile.y);
+          const origin = this._toWorldCoords(x, y);
           const mushroom = new Mushroom(this.scene, origin.x, origin.y, key);
-          virtualTile.state.gameObjects[mushroom.id] = mushroom;
-          this.objectLayer.putTileAt(18, virtualTile.x, virtualTile.y);
+          tile.state.gameObjects[mushroom.id] = mushroom;
+          this.objectLayer.putTileAt(18, x, y);
 
           const center = mushroom.getCenter();
           const nearbyTiles = this.objectLayer.getTilesWithinShape(new Phaser.Geom.Circle(center.x, center.y, 400));
@@ -632,15 +645,8 @@ export default class Map {
             const vt = this._getTileAt(t.x, t.y);
             vt.addModifier(nearbySpawnModifier);
           });
-
-          // const nearbyFarModifier = new Modifier(C.Modifiers.Type.MapTile.NearbySpawnFar, mushroom);
-          // nearbyTilesFar.forEach((t) => {
-          //   const vt = this._getTileAt(t.x, t.y)
-          //   vt.addModifier(nearbyFarModifier);
-          // });
-
         }
-      });
+      }, () => Math.random() < 0.1, () => Math.random() < 0.1);
     }
     this.collectiblesModifiedTime = time;
   };
@@ -664,18 +670,6 @@ export default class Map {
     return this.tilesheets.terrain[C.Map.Terrain.Grass];
   };
 
-  // _getObjectImage(tile, tileBelow) {
-  //   let image;
-  //   if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.L1) {
-  //     image = "tree_pine_L1";
-  //   } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M2) {
-  //     image = "tree_pine_M2";
-  //   } else if (tile.data.foliage.tile === C.Map.Foliage.Tree.Pine.M1) {
-  //     image = "tree_pine_M1";
-  //   }
-  //   return image
-  // };
-
   _getCollectibleTile(tile) {
     if (tile.state.collectible.tile === C.Map.Foliage.Mushroom) {
       return -1;
@@ -685,11 +679,15 @@ export default class Map {
     return -1;
   }
 
-  _forEachTile(callback) {
+  _forEachTile(callback, xFilter, yFilter) {
     this.tiles.forEach((row, r) => {
-      row.forEach((tile, c) => {
-        callback(tile, c, r);
-      });
+      if (!yFilter || yFilter(r)) {
+        row.forEach((tile, c) => {
+          if (!xFilter || xFilter(c)) {
+            callback(tile, c, r);
+          }
+        });
+      }
     });
   }
 
@@ -740,45 +738,74 @@ export default class Map {
     return x >= 0 && x < this.columns && y >= 0 && y < this.rows;
   }
 
-  revealTiles(visibleTilesOuter, visibleTilesInner) {
+  revealTiles(revealedTilesOuter, revealedTilesInner) {
     // Create set for easier tile lookup
-    const visibleOuterSet = new Set();
-    visibleTilesOuter.forEach((tile) => {
-      visibleOuterSet.add(pointToString(tile));
+    const revealedOuterSet = new Set();
+    revealedTilesOuter.forEach((tile) => {
+      revealedOuterSet.add(pointToString(tile));
     });
 
-    // Hide old visible tiles
-    if (this.visibleTiles) {
-      this.visibleTiles.forEach((tile) => {
-        if (!visibleOuterSet.has(pointToString(tile))) {
-          const tileData = this._getTileAt(tile.x, tile.y);
-          Object.values(tileData.state.gameObjects).forEach((obj) => {
-            if (obj.class == C.Classes.Mushroom) {
-              obj.setVisible(false);
-            }
-          });
-
+    // Hide old revealed tiles
+    if (this.revealedTiles) {
+      this.revealedTiles.forEach((tile) => {
+        if (!revealedOuterSet.has(pointToString(tile))) {
           tile.setAlpha(0.7);
         }
       });
     }
 
-    // Reveal new visible tiles
-    visibleTilesOuter.forEach((tile) => {
+    // Reveal new revealed tiles
+    revealedTilesOuter.forEach((tile) => {
+      tile.setAlpha(.2);
+
       const tileData = this._getTileAt(tile.x, tile.y);
       Object.values(tileData.state.gameObjects).forEach((obj) => {
-        obj.setVisible(true);
+        const discovered = obj.setDiscovered && obj.setDiscovered(true);
+        if (discovered) {
+          obj.setVisible(true);
+        }
       });
-      tile.setAlpha(.2);
     });
-    visibleTilesInner.forEach((tile) => {
+    revealedTilesInner.forEach((tile) => {
       tile.setAlpha(0);
     });
 
-    // Update cached visible tiles
-    this.visibleTiles = visibleTilesOuter;
+    // Update cached revealed tiles
+    this.revealedTiles = revealedTilesOuter;
+  }
+
+  setVisibleTiles(visibleTiles) {
+    // Create set for easier tile lookup
+    const visibleSet = new Set();
+    visibleTiles.forEach((tile) => {
+      visibleSet.add(pointToString(tile));
+    });
+
+    if (this.visibleTiles) {
+      [...this.visibleTiles].forEach((tile) => {
+        if (!visibleSet.has(pointToString(tile))) {
+          const tileData = this._getTileAt(tile.x, tile.y);
+          Object.values(tileData.state.gameObjects).forEach((obj) => {
+            obj.setVisible(false);
+          });
+        }
+      });
+    }
+
+    visibleTiles.forEach((tile) => {
+      if (!this.visibleTilesSet.has(pointToString(tile))) {
+        const tileData = this._getTileAt(tile.x, tile.y);
+        Object.values(tileData.state.gameObjects).forEach((obj) => {
+          obj.setVisible(true);
+        });
+      }
+    });
+
+    this.visibleTiles = visibleTiles;
+    this.visibleTilesSet = visibleSet;
   }
 };
+
 
 class MapTile {
   constructor(map, x, y) {

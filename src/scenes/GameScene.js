@@ -57,9 +57,13 @@ export default class GameScene extends Phaser.Scene {
 
     this.initializeInputs();
 
-    this.physics.world.setBounds(0, 0, 256 * 32, 256 * 32);
-    this.cameras.main.setBounds(0, 0, 256 * 32, 256 * 32);
+    this.physics.world.setBounds(0, 0, 200 * 32, 200 * 32);
+    this.cameras.main.setBounds(0, 0, 200 * 32, 200 * 32);
     this.cameras.main.startFollow(this.character);
+    //
+    // this.visibleBounds = new Phaser.GameObjects.Rectangle(this, 0, 0, 0, 0);
+    // this.add.existing(this.visibleBounds);
+    // this.physics.add.existing(this.visibleBounds
   }
 
   update(time, delta) {
@@ -82,7 +86,7 @@ export default class GameScene extends Phaser.Scene {
     this.enemyRanges = this.add.group();
 
     // Other Groups
-    this.propGroup = this.add.group();
+    this.propsGroup = this.add.group();
     this.collectiblesGroup = this.add.group();
   };
 
@@ -179,6 +183,8 @@ export default class GameScene extends Phaser.Scene {
 
   updateMap = (time, delta) => {
     this.map.update(time, delta);
+
+
   };
 
   updateStructures = (time, delta) => {

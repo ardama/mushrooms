@@ -168,7 +168,7 @@ export default class Character extends Unit {
       this.scene.map.revealTiles(visibleTilesOuter, visibleTilesInner);
     }
     this.state.visionCycle += 1;
-    this.state.visionCycle %= 10;
+    this.state.visionCycle %= 8;
 
     let fill = 0
     if (this.state.digging.active) {
@@ -181,7 +181,7 @@ export default class Character extends Unit {
 
     const { x: cx, y: cy } = this._getCenter();
     // Update healthbar
-    this.updateHealthbar(cx, cy - 16, fill);
+    this.updateHealthbar(cx, cy - 16, fill, this.depth);
   }
 
   renderToScene() {
