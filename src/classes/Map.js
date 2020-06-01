@@ -1,4 +1,4 @@
-import { randomInt, shuffle, pointToString, stringToPoint, bounded, toRadians, arrayToGrid, rotateGrid } from '../utils/helpers.js';
+import { randomInt, shuffle, pointToString, stringToPoint, bounded, toRadians, arrayToGrid, rotateGrid, createGrid } from '../utils/helpers.js';
 import C from '../utils/constants.js';
 import M from '../data/MushroomData.js';
 import MapQuadrantData from '../data/MapQuadrants.js';
@@ -14,7 +14,7 @@ export default class Map {
 
     this.rows = 200;
     this.columns = 200;
-    this.borderWidth = 2;
+    this.borderWidth = 4;
 
     this.tilesize = 32;
     this.chunksize = 24;
@@ -28,7 +28,7 @@ export default class Map {
     });
 
     this.tilesets = {
-      terrain: this.tilemap.addTilesetImage("terrain-extended", "terrain-extended", this.tilesize, this.tilesize, 1, 2),
+      terrain: this.tilemap.addTilesetImage("terrain-extended-all", "terrain-extended-all", this.tilesize, this.tilesize, 1, 2),
       foliage: this.tilemap.addTilesetImage("foliage", "foliage", this.tilesize, this.tilesize, 0, 0),
     };
 
@@ -84,24 +84,17 @@ export default class Map {
   };
 
   _initializeMapTiles() {
-    const seal = !!Object.seal;
-    const rows = [...Array(this.rows)].map((_, r) => {
-      const row = [...Array(this.columns)].map((_, c) => {
-        return new MapTile(this, c, r);
-      });
-
-      return seal ? Object.seal(row) : row;
-    });
-
-    this.tiles = seal ? Object.seal(rows) : rows;
+    this.tiles = createGrid(this.rows, this.columns, (r, c) => {
+      return new MapTile(this, c, r);
+    }, true);
   };
 
   _buildMapFeatures() {
     this.quadrants = [
       new MapQuadrant(this, this.borderWidth, this.borderWidth),
-      new MapQuadrant(this, this.borderWidth, this.borderWidth + this.rows / 2),
-      new MapQuadrant(this, this.borderWidth + this.columns / 2, this.borderWidth),
-      new MapQuadrant(this, this.borderWidth + this.columns / 2, this.borderWidth + this.rows / 2),
+      new MapQuadrant(this, this.borderWidth, this.rows / 2),
+      new MapQuadrant(this, this.columns / 2, this.borderWidth),
+      new MapQuadrant(this, this.columns / 2, this.rows / 2),
     ];
   };
 
@@ -573,7 +566,7 @@ export default class Map {
 
   _buildGroundLayer() {
     this.groundLayer = this.tilemap.createBlankDynamicLayer("ground", this.tilesets.terrain);
-    this.groundLayer.setCollision([C.Map.Terrain.Water]);
+    this.groundLayer.setCollision([this.tilesheets.terrain[C.Map.Terrain.Water]]);
     this.groundLayer.depth = 0;
 
     this._forEachTile((tile, x, y) => {
@@ -667,6 +660,33 @@ export default class Map {
     if (tile.state.terrain === 'lake') return this.tilesheets.terrain[C.Map.Terrain.Water];
     if (tile.state.terrain === 'river') return this.tilesheets.terrain[C.Map.Terrain.Rock];
     if (tile.state.terrain === 'forest') return this.tilesheets.terrain[C.Map.Terrain.Dirt];
+
+    const neighbors = createGrid(3, 3, (r, c) => {
+      return this._getTileAt(tile.x - 1 + c, tile.y - 1 + r).state.terrain;
+    });
+
+    const t = neighbors[0][1] === 'forest';
+    const l = neighbors[1][0] === 'forest';
+    const r = neighbors[1][2] === 'forest';
+    const b = neighbors[2][1] === 'forest';
+
+    if (t && l && r && b) return 27;
+    if (t && l && r) return 9;
+    if (t && l && b) return 24;
+    if (t && r && b) return 26;
+    if (l && r && b) return 21;
+    if (t && l) return 6;
+    if (t && r) return 8;
+    if (t && b) return 25;
+    if (l && r) return 15;
+    if (l && b) return 18;
+    if (r && b) return 20;
+    if (t) return 7;
+    if (l) return 12;
+    if (r) return 14;
+    if (b) return 19;
+
+
     return this.tilesheets.terrain[C.Map.Terrain.Grass];
   };
 
@@ -781,6 +801,7 @@ export default class Map {
       visibleSet.add(pointToString(tile));
     });
 
+    // Hide objects on tiles no longer in view
     if (this.visibleTiles) {
       [...this.visibleTiles].forEach((tile) => {
         if (!visibleSet.has(pointToString(tile))) {
@@ -792,6 +813,7 @@ export default class Map {
       });
     }
 
+    // Show objects on newly entered tiles
     visibleTiles.forEach((tile) => {
       if (!this.visibleTilesSet.has(pointToString(tile))) {
         const tileData = this._getTileAt(tile.x, tile.y);
@@ -801,6 +823,7 @@ export default class Map {
       }
     });
 
+    // Update cached tile collections
     this.visibleTiles = visibleTiles;
     this.visibleTilesSet = visibleSet;
   }
@@ -837,7 +860,7 @@ class MapTile {
     this.worldY = worldCoords.y;
 
 
-    this.groundLayerTileIndex = 3;
+    this.groundLayerTileIndex = 4;
     this.objectLayerTileIndex = -1;
 
     this.computeStats();
@@ -950,34 +973,27 @@ class MapQuadrant {
 
             // Set ground type of matching MapTile
             const mapTile = this.map._getTileAt(mapX, mapY);
-            switch(tile) {
-              case 0: {
-                break;
-              }
-              case 1: {
+            const tileIndex = tile - 1;
+
+            switch(tileIndex) {
+              case this.map.tilesheets.terrain[C.Map.Terrain.Water]:
                 mapTile.setTerrain('lake');
                 break;
-              }
-              case 2: {
+              case this.map.tilesheets.terrain[C.Map.Terrain.Rock]:
                 break;
-              }
-              case 3: {
+              case this.map.tilesheets.terrain[C.Map.Terrain.Sand]:
                 break;
-              }
-              case 4: {
+              case this.map.tilesheets.terrain[C.Map.Terrain.Grass]:
                 break;
-              }
-              case 5: {
+              case this.map.tilesheets.terrain[C.Map.Terrain.Dirt]:
                 mapTile.setTerrain('forest');
                 break;
-              }
-              case 6: {
+              case this.map.tilesheets.terrain[C.Map.Terrain.Blank]:
                 break;
-              }
-              default: {
-
-              }
+              default:
+                break;
             }
+            // mapTile.groundLayerTileIndex = tile;
           });
         });
       });

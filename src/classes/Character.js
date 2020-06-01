@@ -181,12 +181,13 @@ export default class Character extends Unit {
 
     const { x: cx, y: cy } = this._getCenter();
     // Update healthbar
-    this.updateHealthbar(cx, cy - 16, fill, this.depth);
+    this.updateHealthbar(cx, cy - 24, fill, this.depth);
   }
 
   renderToScene() {
     super.renderToScene();
-    this.body.setSize(this.hitboxW, this.hitboxH, true);
+    this.body.setSize(this.hitboxW, this.hitboxH, false);
+    this.body.setOffset((32 - this.hitboxW) / 2, 8 + (32 - this.hitboxH) / 2);
   }
 
   _getCenter() {

@@ -88,6 +88,25 @@ export function rotateGrid(grid) {
   return grid;
 }
 
+export function cloneGrid(grid) {
+  return grid.map(r => r.map(c => c));
+}
+
+export function createGrid(rows, columns, defaultValue, seal) {
+  const s = seal && !!Object.seal;
+  const grid = [...Array(rows)].map((_, r) => {
+      const row = [...Array(columns)].map((_, c) => {
+        if (typeof defaultValue === 'function') {
+          return defaultValue(r, c);
+        }
+        return defaultValue;
+      });
+
+      return seal ? Object.seal(row) : row;
+  });
+  return seal ? Object.seal(grid) : grid;
+};
+
 export class Counter {
   constructor(start) {
     this.count = start || 0;

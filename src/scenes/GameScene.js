@@ -22,7 +22,7 @@ export default class GameScene extends Phaser.Scene {
 
 
     this.load.image("terrain", "assets/images/terrain.png");
-    this.load.image("terrain-extended", "assets/images/terrain-extended.png");
+    this.load.image("terrain-extended-all", "assets/images/terrain-extended-all.png");
     this.load.atlas("foliage_atlas", "assets/images/foliage4.png", "assets/json/foliage4.json");
     this.load.image("foliage", "assets/images/foliage3.png");
     this.load.spritesheet("teemo-base", "assets/images/animations/teemo-base.png", {
