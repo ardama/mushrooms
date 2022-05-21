@@ -107,6 +107,26 @@ export function createGrid(rows, columns, defaultValue, seal) {
   return seal ? Object.seal(grid) : grid;
 };
 
+export function forEachGridCell(grid, callback, xFilter, yFilter) {
+  grid.forEach((row, r) => {
+    if (!yFilter || yFilter(r)) {
+      row.forEach((tile, c) => {
+        if (!xFilter || xFilter(c)) {
+          callback(tile, c, r);
+        }
+      });
+    }
+  });
+};
+
+export function getGridCell(grid, x, y) {
+  if (x < 0 || y < 0 || x >= grid[0].length || y >= grid.length) {
+    return null;
+  }
+  
+  return grid[y][x];
+}
+
 export class Counter {
   constructor(start) {
     this.count = start || 0;

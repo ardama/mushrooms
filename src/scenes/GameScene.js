@@ -3,11 +3,13 @@ import A from '../data/Animations.js';
 import C from '../utils/constants.js';
 import D from '../data/GameData.js';
 import Character from '../classes/Character.js';
-import Map from '../classes/Map.js';
+import ProceduralMap from '../classes/ProceduralMap.js';
+import Interface from '../classes/Interface/Interface.js';
+// import Map from '../classes/Map.js';
 import { Counter } from '../utils/helpers.js';
 
 export default class GameScene extends Phaser.Scene {
-  constructor(test) {
+  constructor() {
     super({ key: 'GameScene' });
 
     this.counter = new Counter(1);
@@ -22,13 +24,20 @@ export default class GameScene extends Phaser.Scene {
 
 
     this.load.image("terrain", "assets/images/terrain.png");
+    this.load.image("terrain-18", "assets/images/terrain-18.png");
+    this.load.image("terrain-extended-18", "assets/images/terrain-extended-18.png");
     this.load.image("terrain-extended-all", "assets/images/terrain-extended-all.png");
-    this.load.atlas("foliage_atlas", "assets/images/foliage4.png", "assets/json/foliage4.json");
+    this.load.atlas("foliage-atlas", "assets/images/foliage-16.png", "assets/json/foliage-16.json");
+    // this.load.atlas("foliage_atlas", "assets/images/foliage4.png", "assets/json/foliage4.json");
     this.load.image("foliage", "assets/images/foliage3.png");
-    this.load.spritesheet("teemo-base", "assets/images/animations/teemo-base.png", {
-      frameWidth: 32,
-      frameHeight: 32,
+    this.load.spritesheet("teemo-base", "assets/images/animations/teemo-base-16.png", {
+      frameWidth: 16,
+      frameHeight: 16,
     });
+    // this.load.spritesheet("teemo-base", "assets/images/animations/teemo-base.png", {
+    //   frameWidth: 32,
+    //   frameHeight: 32,
+    // });
 
     this.load.on('complete', () => {
       A.createAnimations(this);
@@ -54,16 +63,14 @@ export default class GameScene extends Phaser.Scene {
     this.createMap(time);
     this.createStructures();
     this.createEnemies();
+    this.createInterface();
 
     this.initializeInputs();
 
-    this.physics.world.setBounds(0, 0, 200 * 32, 200 * 32);
-    this.cameras.main.setBounds(0, 0, 200 * 32, 200 * 32);
+    this.physics.world.setBounds(0, 0, 192 * 16, 192 * 16);
+    this.cameras.main.setBounds(0, 0, 192 * 16, 192 * 16);
+    this.cameras.main.setZoom(3);
     this.cameras.main.startFollow(this.character);
-    //
-    // this.visibleBounds = new Phaser.GameObjects.Rectangle(this, 0, 0, 0, 0);
-    // this.add.existing(this.visibleBounds);
-    // this.physics.add.existing(this.visibleBounds
   }
 
   update(time, delta) {
@@ -74,6 +81,7 @@ export default class GameScene extends Phaser.Scene {
     this.updateStructures(time, delta);
     this.updateEnemies(time, delta);
     this.updateCollectibles(time, delta);
+    this.updateInterface(time, delta);
   }
 
   createGroups = () => {
@@ -95,13 +103,18 @@ export default class GameScene extends Phaser.Scene {
   };
 
   createMap = (time) => {
-    this.map = new Map(this, this.cameras.main.displayWidth, this.cameras.main.displayHeight, time);
+    // this.map = new Map(this, this.cameras.main.displayWidth, this.cameras.main.displayHeight, time);
+    this.map = new ProceduralMap(this, time);
   };
 
   createStructures = () => {
   };
 
   createEnemies = () => {
+  };
+  
+  createInterface = () => {
+    this.interface = new Interface(this);
   };
 
   initializeInputs = () => {
@@ -111,7 +124,10 @@ export default class GameScene extends Phaser.Scene {
       C.Keycodes.DOWN,
       C.Keycodes.LEFT,
       C.Keycodes.RIGHT,
+      C.Keycodes.W,
+      C.Keycodes.A,
       C.Keycodes.S,
+      C.Keycodes.D,
       C.Keycodes.ONE,
       C.Keycodes.TWO,
       C.Keycodes.THREE,
@@ -128,37 +144,58 @@ export default class GameScene extends Phaser.Scene {
     })
 
     this.keys[C.Keycodes.ESC].on('down', () => {
-      this.scene.launch('InGameMenuScene');
+      this.scene.launch('MenuScene');
       this.scene.pause();
     })
 
 
     this.keys[C.Keycodes.UP].on('down', () => {
-      this.character.setMoving('up', true);
+      this.character.setMoving(C.Directions.N, true);
     });
     this.keys[C.Keycodes.UP].on('up', () => {
-      this.character.setMoving('up', false);
+      this.character.setMoving(C.Directions.N, false);
     });
     this.keys[C.Keycodes.DOWN].on('down', () => {
-      this.character.setMoving('down', true);
+      this.character.setMoving(C.Directions.S, true);
     });
     this.keys[C.Keycodes.DOWN].on('up', () => {
-      this.character.setMoving('down', false);
-    });
-    this.keys[C.Keycodes.LEFT].on('down', () => {
-      this.character.setMoving('left', true);
-    });
-    this.keys[C.Keycodes.LEFT].on('up', () => {
-      this.character.setMoving('left', false);
+      this.character.setMoving(C.Directions.S, false);
     });
     this.keys[C.Keycodes.RIGHT].on('down', () => {
-      this.character.setMoving('right', true);
+      this.character.setMoving(C.Directions.E, true);
     });
     this.keys[C.Keycodes.RIGHT].on('up', () => {
-      this.character.setMoving('right', false);
+      this.character.setMoving(C.Directions.E, false);
+    });
+    this.keys[C.Keycodes.LEFT].on('down', () => {
+      this.character.setMoving(C.Directions.W, true);
+    });
+    this.keys[C.Keycodes.LEFT].on('up', () => {
+      this.character.setMoving(C.Directions.W, false);
+    });
+    this.keys[C.Keycodes.W].on('down', () => {
+      this.character.setMoving(C.Directions.N, true);
+    });
+    this.keys[C.Keycodes.W].on('up', () => {
+      this.character.setMoving(C.Directions.N, false);
     });
     this.keys[C.Keycodes.S].on('down', () => {
-      this.character.halt();
+      this.character.setMoving(C.Directions.S, true);
+    });
+    this.keys[C.Keycodes.S].on('up', () => {
+      this.character.setMoving(C.Directions.S, false);
+    });
+    this.keys[C.Keycodes.D].on('down', () => {
+      this.character.setMoving(C.Directions.E, true);
+    });
+    this.keys[C.Keycodes.D].on('up', () => {
+      this.character.setMoving(C.Directions.E, false);
+    });
+    this.keys[C.Keycodes.A].on('down', () => {
+      this.character.setMoving(C.Directions.W, true);
+    });
+    this.keys[C.Keycodes.A].on('up', () => {
+      this.character.setMoving(C.Directions.W, false);
     });
     this.keys[C.Keycodes.ONE].on('down', () => {
       this.character.setDigging(true);
@@ -183,8 +220,6 @@ export default class GameScene extends Phaser.Scene {
 
   updateMap = (time, delta) => {
     this.map.update(time, delta);
-
-
   };
 
   updateStructures = (time, delta) => {
@@ -203,5 +238,9 @@ export default class GameScene extends Phaser.Scene {
     this.collectiblesGroup.getChildren().forEach((collectible) => {
       collectible.update(time, delta);
     });
-  }
+  };
+  
+  updateInterface = (time, delta) => {
+    this.interface.update(time, delta);
+  };
 }

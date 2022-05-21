@@ -60,11 +60,11 @@ export default class Unit extends Phaser.GameObjects.Sprite {
     const { healthbarColor } = this.typeData;
 
     this.healthbar = new Phaser.GameObjects.Rectangle(
-      this.scene, healthbarCoordinates.x, healthbarCoordinates.y, 30, 2, 0x33333300,
+      this.scene, healthbarCoordinates.x, healthbarCoordinates.y, 14, 1, 0x33333300,
     );
 
     this.healthbarFill = new Phaser.GameObjects.Rectangle(
-      this.scene, healthbarCoordinates.x, healthbarCoordinates.y, 30, 2, healthbarColor,
+      this.scene, healthbarCoordinates.x, healthbarCoordinates.y, 14, 1, healthbarColor,
     );
   };
 
@@ -80,7 +80,7 @@ export default class Unit extends Phaser.GameObjects.Sprite {
     this.healthbarFill.x = coords.x;
     this.healthbarFill.y = coords.y;
     this.healthbarFill.depth = depth;
-    this.healthbarFill.width = 30 * fill;
+    this.healthbarFill.width = 14 * fill;
     // this.healthbarFill.width = 30 * (1 - this.state.missinghealth / this.stats.maxhealth);
   }
 

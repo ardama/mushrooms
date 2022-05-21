@@ -10,7 +10,7 @@ const typeData = {
 
 export default class Character extends Unit {
   constructor(scene, x, y) {
-    const unitData = { appearance: { key: 'tiles', hitbox: { width: 32 } } };
+    const unitData = { appearance: { key: 'tiles', hitbox: { width: 16 } } };
     super(scene, x, y, unitData, typeData);
 
     this.los = 250;
@@ -21,8 +21,8 @@ export default class Character extends Unit {
     );
     this.attackRange.owner = this;
 
-    this.hitboxW = 24;
-    this.hitboxH = 16;
+    this.hitboxW = 14;
+    this.hitboxH = 5;
 
     this.scene.add.existing(this.attackRange);
     this.scene.physics.add.existing(this.attackRange);
@@ -33,10 +33,10 @@ export default class Character extends Unit {
     super.setInitialState();
 
     this.state.moving = {
-      up: false,
-      down: false,
-      left: false,
-      right: false,
+      [C.Directions.N]: false,
+      [C.Directions.E]: false,
+      [C.Directions.S]: false,
+      [C.Directions.W]: false,
     };
 
     this.state.visionCycle = 0;
@@ -84,16 +84,16 @@ export default class Character extends Unit {
 
     const { destination } = this.state;
     if (destination) {
-      this.scene.physics.moveTo(this, destination.x, destination.y, 99);
-
+      this.scene.physics.moveTo(this, destination.x, destination.y, 55);
       // Compute destination arrival
-      const { velocity, center } = this.body;
-      let arrivedHorizontal = (velocity.x > 0 && center.x >= destination.x) || (velocity.x < 0 && center.x <= destination.x);
-      let arrivedVertical = (velocity.y > 0 && center.y >= destination.y) || (velocity.y < 0 && center.y <= destination.y);
+      const { x: cx, y: cy } = this._getCenter();
+      const { velocity: { x: vx, y: vy } } = this.body;
+      let arrivedHorizontal = vx === 0 || (vx > 0 && cx >= destination.x) || (vx < 0 && cx <= destination.x);
+      let arrivedVertical = vy === 0 || (vy > 0 && cy >= destination.y) || (vy < 0 && cy <= destination.y);
 
       const oldPosition = this.state.previousPositions.shift()
-      this.state.previousPositions.push({ x: center.x, y: center.y });
-      if (oldPosition && Math.abs(oldPosition.x - center.x) < 1 && Math.abs(oldPosition.y - center.y) < 1) {
+      this.state.previousPositions.push({ x: cx, y: cy });
+      if (oldPosition && Math.abs(oldPosition.x - cx) < 1 && Math.abs(oldPosition.y - cy) < 1) {
         arrivedVertical = true;
         arrivedHorizontal = true;
       }
@@ -102,47 +102,47 @@ export default class Character extends Unit {
         this.halt();
         this.finishAnimation();
       } else {
-        const vertical = Math.abs(velocity.y) > 1.5 * Math.abs(velocity.x);
-        if (vertical && velocity.y < 0) {
-          this.direction = C.Directions.Up;
+        const vertical = Math.abs(vy) > 1.5 * Math.abs(vx);
+        if (vertical && vy < 0) {
+          this.direction = C.Directions.N;
           this.triggerAnimation('teemo-base-walk-up', -1);
-        } else if (vertical && velocity.y > 0) {
-          this.direction = C.Directions.Down;
+        } else if (vertical && vy > 0) {
+          this.direction = C.Directions.S;
           this.triggerAnimation('teemo-base-walk-down', -1);
-        } else if (velocity.x < 0) {
-          this.direction = C.Directions.Left;
-          this.triggerAnimation('teemo-base-walk-left', -1);
-        } else if (velocity.x > 0) {
-          this.direction = C.Directions.Right;
+        } else if (vx > 0) {
+          this.direction = C.Directions.E;
           this.triggerAnimation('teemo-base-walk-right', -1);
+        } else if (vx < 0) {
+          this.direction = C.Directions.W;
+          this.triggerAnimation('teemo-base-walk-left', -1);
         }
       }
 
     } else {
       const { moving } = this.state;
 
-      let directionX = (moving.left ? -1 : 0) + (moving.right ? 1 : 0);
-      let directionY = (moving.up ? -1 : 0) + (moving.down ? 1 : 0);
+      let directionX = (moving[C.Directions.W] ? -1 : 0) + (moving[C.Directions.E] ? 1 : 0);
+      let directionY = (moving[C.Directions.N] ? -1 : 0) + (moving[C.Directions.S] ? 1 : 0);
 
-      let velocityX = directionX * 99;
-      let velocityY = directionY * 99;
+      let velocityX = directionX * 55;
+      let velocityY = directionY * 55;
       if (directionX !== 0 && directionY !== 0) {
         velocityX /= C.Misc.Root2;
         velocityY /= C.Misc.Root2;
       }
 
 
-      if (velocityX < 0) {
-        this.direction = C.Directions.Up;
-        this.triggerAnimation('teemo-base-walk-left', -1);
-      } else if (velocityX > 0) {
-        this.direction = C.Directions.Down;
+      if (velocityX > 0) {
+        this.direction = C.Directions.E;
         this.triggerAnimation('teemo-base-walk-right', -1);
+      } else if (velocityX < 0) {
+        this.direction = C.Directions.W;
+        this.triggerAnimation('teemo-base-walk-left', -1);
       } else if (velocityY < 0) {
-        this.direction = C.Directions.Left;
+        this.direction = C.Directions.N;
         this.triggerAnimation('teemo-base-walk-up', -1);
       } else if (velocityY > 0) {
-        this.direction = C.Directions.Right;
+        this.direction = C.Directions.S;
         this.triggerAnimation('teemo-base-walk-down', -1);
       } else {
         this.finishAnimation();
@@ -152,8 +152,8 @@ export default class Character extends Unit {
       this.body.velocity.y = velocityY;
     }
 
-    this.scene.physics.collide(this, this.scene.map.groundLayer);
-    this.scene.physics.collide(this, this.scene.map.objectLayer);
+    this.scene.physics.collide(this, this.scene.map.layers.ground);
+    this.scene.physics.collide(this, this.scene.map.layers.object);
 
     this.depth = Math.ceil(this.body.y + (this.body.height / 2));
 
@@ -162,13 +162,13 @@ export default class Character extends Unit {
 
     const { center, radius } = this.attackRange.body;
 
-    if (this.state.visionCycle === 0) {
-      const visibleTilesOuter = this.scene.map.fogLayer.getTilesWithinShape(new Phaser.Geom.Circle(center.x, center.y, radius));
-      const visibleTilesInner = this.scene.map.fogLayer.getTilesWithinShape(new Phaser.Geom.Circle(center.x, center.y, (radius * 0.95)));
-      this.scene.map.revealTiles(visibleTilesOuter, visibleTilesInner);
-    }
-    this.state.visionCycle += 1;
-    this.state.visionCycle %= 8;
+    // if (this.state.visionCycle === 0) {
+    //   const visibleTilesOuter = this.scene.map.layers.vision.getTilesWithinShape(new Phaser.Geom.Circle(center.x, center.y, radius));
+    //   const visibleTilesInner = this.scene.map.layers.vision.getTilesWithinShape(new Phaser.Geom.Circle(center.x, center.y, (radius * 0.95)));
+    //   this.scene.map.revealTiles(visibleTilesOuter, visibleTilesInner);
+    // }
+    // this.state.visionCycle += 1;
+    // this.state.visionCycle %= 8;
 
     let fill = 0
     if (this.state.digging.active) {
@@ -181,19 +181,26 @@ export default class Character extends Unit {
 
     const { x: cx, y: cy } = this._getCenter();
     // Update healthbar
-    this.updateHealthbar(cx, cy - 24, fill, this.depth);
+    this.updateHealthbar(cx, cy - 10, fill, this.depth);
   }
 
   renderToScene() {
     super.renderToScene();
     this.body.setSize(this.hitboxW, this.hitboxH, false);
-    this.body.setOffset((32 - this.hitboxW) / 2, 8 + (32 - this.hitboxH) / 2);
+    this.body.setOffset((16 - this.hitboxW) / 2, 4 + (16 - this.hitboxH) / 2);
   }
 
-  _getCenter() {
+  _getHitboxCenter() {
     return {
       x: this.body.x + this.hitboxW / 2,
       y: this.body.y + this.hitboxH / 2,
+    }
+  }
+  
+  _getCenter() {
+    return {
+      x: this.body.x - this.body.offset.x + 8,
+      y: this.body.y - this.body.offset.y + 8,
     }
   }
 
@@ -215,10 +222,10 @@ export default class Character extends Unit {
       }
 
       this.state.moving = {
-        up: false,
-        down: false,
-        left: false,
-        right: false,
+        [C.Directions.N]: false,
+        [C.Directions.E]: false,
+        [C.Directions.S]: false,
+        [C.Directions.W]: false,
       };
     } else {
       this.state.destination = null;
@@ -230,10 +237,10 @@ export default class Character extends Unit {
     this.body.velocity.y = 0;
 
     this.state.moving = {
-      up: false,
-      down: false,
-      left: false,
-      right: false,
+      [C.Directions.N]: false,
+      [C.Directions.E]: false,
+      [C.Directions.S]: false,
+      [C.Directions.W]: false,
     };
 
     this.state.destination = null;
@@ -246,9 +253,9 @@ export default class Character extends Unit {
     if (value === this.state.digging.active) { return; }
 
     if (value) {
-      const c = this._getCenter();
-      const currentTile = this.scene.map._getTileAtWorldCoords(c.x, c.y);
-      const targetTile = this.scene.map._getAdjacentTile(currentTile, this.direction);
+      const c = this._getHitboxCenter();
+      const currentTile = this.scene.map.getMapTile(-1, -1, c.x, c.y);
+      const targetTile = currentTile.getNeighbor(this.direction);
       const mushroom = targetTile && targetTile.getMushroom();
       if (!mushroom) {
         return;
@@ -268,6 +275,13 @@ export default class Character extends Unit {
   collectMushroom() {
     const { target, tile } = this.state.digging;
     tile.removeGameObject(target);
+    
+    Object.values(target.ownedModifiers).forEach((modifier) => {
+      modifier.active = false;
+    });
+    
+    target.setVisible(false);
+
     this.state.inventory[target.id] = target;
     console.log("harvested a", target.name);
     this.setDigging(false);
